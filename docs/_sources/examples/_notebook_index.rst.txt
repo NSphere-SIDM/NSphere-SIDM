@@ -1,0 +1,5 @@
+.. toctree::
+   :maxdepth: 1
+   :caption: Example Notebooks:
+
+   notebooks/nsphere_notebook_example1
