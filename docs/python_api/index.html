@@ -436,7 +436,8 @@ All arrays must have the same length for proper row-wise filtering.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The project root is identified by the presence of a ‘src’ directory.</p>
+<p>The project root is identified by the presence of a ‘src’ directory.
+Uses path normalization for cross-platform compatibility.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1317,12 +1318,12 @@ for multiple particles over the simulation period.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.preprocess_phase_space_file">
-<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">preprocess_phase_space_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rank_file_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#preprocess_phase_space_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.preprocess_phase_space_file" title="Link to this definition"></a></dt>
-<dd><p>Preprocess a single Rank file for phase space animation.
-This function needs to be at the module level for multiprocessing to work.</p>
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">preprocess_phase_space_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rank_file_data_with_suffix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#preprocess_phase_space_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.preprocess_phase_space_file" title="Link to this definition"></a></dt>
+<dd><p>Preprocess a single Rank file for phase space animation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rank_file_data</strong> (<em>tuple</em>) – Tuple containing (rank_file, suffix, ncol, max_r_all, max_v_all, nbins, kmsec_to_kpcmyr, project_root_path).</p>
+<dd class="field-odd"><p><strong>rank_file_data_with_suffix</strong> (<em>tuple</em>) – Tuple containing (rank_file, placeholder, ncol, max_r_all, max_v_all, nbins,
+kmsec_to_kpcmyr, project_root_path, local_suffix).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(snap_num, H, frame_vmax) if successful or None if processing failed.</p>
@@ -1436,17 +1437,19 @@ This function needs to be at the module level for multiprocessing to work.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.process_rank_file_for_1d_anim">
-<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">process_rank_file_for_1d_anim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#process_rank_file_for_1d_anim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.process_rank_file_for_1d_anim" title="Link to this definition"></a></dt>
-<dd><p>Processes a single sorted Rank snapshot file for 1D animations.</p>
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">process_rank_file_for_1d_anim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_data_with_suffix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#process_rank_file_for_1d_anim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.process_rank_file_for_1d_anim" title="Link to this definition"></a></dt>
+<dd><p>Processes a single sorted Rank snapshot file for 1D animations.
+Now accepts suffix explicitly.</p>
 <p>Loads only the required columns (Mass, Radius, Psi, Density), sorts by
 radius, filters invalid data, fits linear splines to Mass, Psi and Density,
 performs downsampling to a common radius grid, and returns the processed data
 ready for animation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>task_data</strong> (<em>str</em><em> or </em><em>tuple</em>) – Either a path to the sorted Rank data file (e.g., Rank_Mass_Rad_VRad_sorted_t…),
-or a tuple containing (fname, project_root_path) where project_root_path is the
-explicit path to the project root directory.</p>
+<dd class="field-odd"><p><strong>task_data_with_suffix</strong> (<em>tuple</em>) – A tuple containing (fname, project_root_path, local_suffix) where:
+- fname is the path to the sorted Rank data file
+- project_root_path is the explicit path to the project root directory
+- local_suffix is the suffix for file identification</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>On success, returns a tuple:
@@ -1534,11 +1537,12 @@ specific particles based on their IDs.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.process_sorted_energy_file">
 <span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">process_sorted_energy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#process_sorted_energy_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.process_sorted_energy_file" title="Link to this definition"></a></dt>
-<dd><p>Process an unsorted rank file for energy-time plot, extracting data for specific tracked particle IDs.
-This function is intended to be used with multiprocessing, so it needs to be at the module level.</p>
+<dd><p>Process an unsorted rank file for energy-time plot, extracting data for specific tracked particle IDs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – The filename to process.</p>
+<dd class="field-odd"><p><strong>task_data</strong> (<em>tuple</em>) – A tuple containing (fname, local_suffix) where:
+- fname is the path to the unsorted Rank data file
+- local_suffix is the suffix for file identification</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(snapshot_number, energy_data) if successful or None if there was an error.</p>
@@ -1577,13 +1581,14 @@ be included in the energy plots category.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.process_unsorted_rank_file">
-<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">process_unsorted_rank_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#process_unsorted_rank_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.process_unsorted_rank_file" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">process_unsorted_rank_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_data_with_suffix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#process_unsorted_rank_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.process_unsorted_rank_file" title="Link to this definition"></a></dt>
 <dd><p>Process an unsorted rank file and return the snapshot number and energy values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>task_data</strong> (<em>str</em><em> or </em><em>tuple</em>) – Either a path to the unsorted Rank data file (e.g., Rank_Mass_Rad_VRad_unsorted_t…),
-or a tuple containing (fname, project_root_path) where project_root_path is the
-explicit path to the project root directory.</p>
+<dd class="field-odd"><p><strong>task_data_with_suffix</strong> (<em>tuple</em>) – A tuple containing (fname, project_root_path, local_suffix) where:
+- fname is the path to the unsorted Rank data file
+- project_root_path is the explicit path to the project root directory
+- local_suffix is the suffix for file identification</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(snapshot_number, energy_values) if successful or None if there was an error.</p>

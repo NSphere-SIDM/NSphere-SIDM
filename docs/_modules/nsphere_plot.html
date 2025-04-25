@@ -95,6 +95,8 @@
 
 <span class="c1"># Import other modules</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.animation</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">animation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy_distance</span>
@@ -128,29 +130,40 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">find_project_root</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determines the project root directory.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
 <span class="sd">        Path to the project root directory.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The project root is identified by the presence of a &#39;src&#39; directory.</span>
+<span class="sd">    Uses path normalization for cross-platform compatibility.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">script_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
     <span class="n">script_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">script_path</span><span class="p">)</span>
     
-    <span class="c1"># Navigate up from script directory until src directory is found</span>
-    <span class="n">potential_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">script_dir</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">script_dir</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;python&#39;</span><span class="p">:</span>
+        <span class="n">potential_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">script_dir</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">potential_root</span> <span class="o">=</span> <span class="n">script_dir</span>
     
-    <span class="c1"># Basic check for a known directory that should be at the root</span>
+    <span class="n">potential_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">potential_root</span><span class="p">)</span>
+    
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">potential_root</span><span class="p">,</span> <span class="s1">&#39;src&#39;</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">potential_root</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Fallback if structure is unexpected</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Could not verify project root via &#39;src&#39; directory. Using derived directory.&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">potential_root</span></div>
+    
+    <span class="n">parent_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">potential_root</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_dir</span><span class="p">,</span> <span class="s1">&#39;src&#39;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">parent_dir</span>
+        
+    <span class="n">grandparent_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">parent_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">grandparent_dir</span><span class="p">,</span> <span class="s1">&#39;src&#39;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">grandparent_dir</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Could not verify project root via &#39;src&#39; directory. Using derived directory: </span><span class="si">{</span><span class="n">potential_root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">potential_root</span></div>
 
 
 <span class="c1"># Set up project paths</span>
@@ -4444,29 +4457,43 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">process_sorted_energy_file</span><span class="p">(</span><span class="n">task_data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process an unsorted rank file for energy-time plot, extracting data for specific tracked particle IDs.</span>
-<span class="sd">    This function is intended to be used with multiprocessing, so it needs to be at the module level.</span>
-
+<span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fname : str</span>
-<span class="sd">        The filename to process.</span>
+<span class="sd">    task_data : tuple</span>
+<span class="sd">        A tuple containing (fname, local_suffix) where:</span>
+<span class="sd">        - fname is the path to the unsorted Rank data file</span>
+<span class="sd">        - local_suffix is the suffix for file identification</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    tuple or None</span>
 <span class="sd">        (snapshot_number, energy_data) if successful or None if there was an error.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">tracked_ids_for_energy</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">ncol_Rank_Mass_Rad_VRad_unsorted</span>
+    <span class="c1"># Unpack arguments</span>
+    <span class="n">fname</span><span class="p">,</span> <span class="n">local_suffix</span> <span class="o">=</span> <span class="n">task_data</span>
+    <span class="k">global</span> <span class="n">ncol_Rank_Mass_Rad_VRad_unsorted</span>
 
-    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_unsorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="c1"># Extract the timestep from the filename</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_unsorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">local_suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Regex failed for sorted energy file </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> with suffix &#39;</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="n">snap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
+    <span class="c1"># Reload tracked IDs inside the worker</span>
+    <span class="n">lowest_radius_ids_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/lowest_radius_ids</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span>
+    <span class="n">id_data</span> <span class="o">=</span> <span class="n">safe_load_and_filter_bin</span><span class="p">(</span><span class="n">lowest_radius_ids_file</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">id_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">id_data</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Worker failed to load IDs from </span><span class="si">{</span><span class="n">lowest_radius_ids_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+         <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">max_particles</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">id_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">local_tracked_ids</span> <span class="o">=</span> <span class="n">id_data</span><span class="p">[:</span><span class="n">max_particles</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
     <span class="c1"># Use helper function to load data for specific particle IDs</span>
     <span class="n">tracked_energy_data</span> <span class="o">=</span> <span class="n">safe_load_particle_ids_bin</span><span class="p">(</span>
-        <span class="n">fname</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="n">ncol_Rank_Mass_Rad_VRad_unsorted</span><span class="p">,</span> <span class="n">particle_ids</span><span class="o">=</span><span class="n">tracked_ids_for_energy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="n">fname</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="n">ncol_Rank_Mass_Rad_VRad_unsorted</span><span class="p">,</span> <span class="n">particle_ids</span><span class="o">=</span><span class="n">local_tracked_ids</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">tracked_energy_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tracked_energy_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -4517,32 +4544,30 @@
 
 <div class="viewcode-block" id="process_unsorted_rank_file">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.process_unsorted_rank_file">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">process_unsorted_rank_file</span><span class="p">(</span><span class="n">task_data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_unsorted_rank_file</span><span class="p">(</span><span class="n">task_data_with_suffix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process an unsorted rank file and return the snapshot number and energy values.</span>
-
+<span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    task_data : str or tuple</span>
-<span class="sd">        Either a path to the unsorted Rank data file (e.g., Rank_Mass_Rad_VRad_unsorted_t...),</span>
-<span class="sd">        or a tuple containing (fname, project_root_path) where project_root_path is the</span>
-<span class="sd">        explicit path to the project root directory.</span>
+<span class="sd">    task_data_with_suffix : tuple</span>
+<span class="sd">        A tuple containing (fname, project_root_path, local_suffix) where:</span>
+<span class="sd">        - fname is the path to the unsorted Rank data file</span>
+<span class="sd">        - project_root_path is the explicit path to the project root directory</span>
+<span class="sd">        - local_suffix is the suffix for file identification</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    tuple or None</span>
 <span class="sd">        (snapshot_number, energy_values) if successful or None if there was an error.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Handle both string and tuple input for backward compatibility</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task_data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="n">fname</span><span class="p">,</span> <span class="n">project_root_path</span> <span class="o">=</span> <span class="n">task_data</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">fname</span> <span class="o">=</span> <span class="n">task_data</span>
-        <span class="n">project_root_path</span> <span class="o">=</span> <span class="kc">None</span>
-        
+    <span class="c1"># Unpack arguments</span>
+    <span class="n">fname</span><span class="p">,</span> <span class="n">project_root_path</span><span class="p">,</span> <span class="n">local_suffix</span> <span class="o">=</span> <span class="n">task_data_with_suffix</span>
+    
     <span class="c1"># Extract the timestep from the filename</span>
-    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_unsorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_unsorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">local_suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">mo</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Regex failed for unsorted file </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> with suffix &#39;</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="n">snap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
@@ -4675,9 +4700,10 @@
 
 <div class="viewcode-block" id="process_rank_file_for_1d_anim">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.process_rank_file_for_1d_anim">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">process_rank_file_for_1d_anim</span><span class="p">(</span><span class="n">task_data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_rank_file_for_1d_anim</span><span class="p">(</span><span class="n">task_data_with_suffix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Processes a single sorted Rank snapshot file for 1D animations.</span>
+<span class="sd">    Now accepts suffix explicitly.</span>
 
 <span class="sd">    Loads only the required columns (Mass, Radius, Psi, Density), sorts by</span>
 <span class="sd">    radius, filters invalid data, fits linear splines to Mass, Psi and Density,</span>
@@ -4686,10 +4712,11 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    task_data : str or tuple</span>
-<span class="sd">        Either a path to the sorted Rank data file (e.g., Rank_Mass_Rad_VRad_sorted_t...),</span>
-<span class="sd">        or a tuple containing (fname, project_root_path) where project_root_path is the</span>
-<span class="sd">        explicit path to the project root directory.</span>
+<span class="sd">    task_data_with_suffix : tuple</span>
+<span class="sd">        A tuple containing (fname, project_root_path, local_suffix) where:</span>
+<span class="sd">        - fname is the path to the sorted Rank data file</span>
+<span class="sd">        - project_root_path is the explicit path to the project root directory</span>
+<span class="sd">        - local_suffix is the suffix for file identification</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -4699,13 +4726,10 @@
 <span class="sd">        where arrays have the downsampled length.</span>
 <span class="sd">        Returns None if loading, processing, or spline fitting fails.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Handle both string and tuple input for backward compatibility</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task_data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="n">fname</span><span class="p">,</span> <span class="n">project_root_path</span> <span class="o">=</span> <span class="n">task_data</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">fname</span> <span class="o">=</span> <span class="n">task_data</span>
-        <span class="n">project_root_path</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># Will use global or try to determine</span>
-    <span class="k">global</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">ncol_Rank_Mass_Rad_VRad_sorted</span> <span class="c1"># Need access to these</span>
+    <span class="c1"># Unpack arguments including the suffix</span>
+    <span class="n">fname</span><span class="p">,</span> <span class="n">project_root_path</span><span class="p">,</span> <span class="n">local_suffix</span> <span class="o">=</span> <span class="n">task_data_with_suffix</span>
+    <span class="c1"># No longer need: global suffix</span>
+    <span class="k">global</span> <span class="n">ncol_Rank_Mass_Rad_VRad_sorted</span> <span class="c1"># Keep this global if needed elsewhere in function</span>
     
     <span class="c1"># Define the dtype list for the *entire* row of the sorted file</span>
     <span class="n">sorted_rank_dtype_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
@@ -4717,7 +4741,11 @@
     <span class="n">load_idx_map</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span> <span class="c1"># Original Col -&gt; Index in loaded data</span>
     <span class="n">radius_load_idx</span> <span class="o">=</span> <span class="n">load_idx_map</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="c1"># Index of Radius within loaded data</span>
 
-    <span class="n">snap_num</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span> <span class="c1"># Use existing helper</span>
+    <span class="c1"># Extract snapshot number from filename</span>
+    <span class="n">snap_num</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">local_suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">snap_num</span> <span class="o">==</span> <span class="mi">999999999</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not extract valid snapshot number from </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> using suffix &#39;</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">&#39; for 1D anim. Skipping.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Load only the necessary columns</span>
@@ -4820,25 +4848,29 @@
 
 <div class="viewcode-block" id="preprocess_phase_space_file">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.preprocess_phase_space_file">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">preprocess_phase_space_file</span><span class="p">(</span><span class="n">rank_file_data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">preprocess_phase_space_file</span><span class="p">(</span><span class="n">rank_file_data_with_suffix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Preprocess a single Rank file for phase space animation.</span>
-<span class="sd">    This function needs to be at the module level for multiprocessing to work.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    rank_file_data : tuple</span>
-<span class="sd">        Tuple containing (rank_file, suffix, ncol, max_r_all, max_v_all, nbins, kmsec_to_kpcmyr, project_root_path).</span>
+<span class="sd">    rank_file_data_with_suffix : tuple</span>
+<span class="sd">        Tuple containing (rank_file, placeholder, ncol, max_r_all, max_v_all, nbins, </span>
+<span class="sd">        kmsec_to_kpcmyr, project_root_path, local_suffix).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    tuple or None</span>
 <span class="sd">        (snap_num, H, frame_vmax) if successful or None if processing failed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">rank_file</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">max_r_all</span><span class="p">,</span> <span class="n">max_v_all</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">kmsec_to_kpcmyr</span><span class="p">,</span> <span class="n">project_root_path</span> <span class="o">=</span> <span class="n">rank_file_data</span>
+    <span class="c1"># Unpack arguments including the suffix</span>
+    <span class="n">rank_file</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">max_r_all</span><span class="p">,</span> <span class="n">max_v_all</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">kmsec_to_kpcmyr</span><span class="p">,</span> <span class="n">project_root_path</span><span class="p">,</span> <span class="n">local_suffix</span> <span class="o">=</span> <span class="n">rank_file_data_with_suffix</span>
 
     <span class="c1"># Extract snapshot number for labeling</span>
-    <span class="n">snap_num</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">rank_file</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="n">snap_num</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">rank_file</span><span class="p">,</span> <span class="n">local_suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">snap_num</span> <span class="o">==</span> <span class="mi">999999999</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not extract valid snapshot number from </span><span class="si">{</span><span class="n">rank_file</span><span class="si">}</span><span class="s2"> using suffix &#39;</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">&#39; for phase space. Skipping.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># Load the snapshot data</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">safe_load_and_filter_bin</span><span class="p">(</span>
@@ -4968,15 +5000,17 @@
     <span class="c1"># Log to file only, keep console output minimal</span>
     <span class="n">log_message</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rank_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files for phase space animation...&quot;</span><span class="p">)</span>
 
-    <span class="n">preprocess_args</span> <span class="o">=</span> <span class="p">[(</span>
+    <span class="c1"># Prepare data for parallel preprocessing, ensuring suffix is explicitly passed</span>
+    <span class="n">preprocess_args_with_suffix</span> <span class="o">=</span> <span class="p">[(</span>
         <span class="n">rank_file</span><span class="p">,</span>
-        <span class="n">suffix</span><span class="p">,</span>
+        <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Placeholder for original suffix position</span>
         <span class="n">ncol_Rank_Mass_Rad_VRad_sorted</span><span class="p">,</span>
         <span class="n">max_r_all</span><span class="p">,</span>
         <span class="n">max_v_all</span><span class="p">,</span>
         <span class="n">nbins</span><span class="p">,</span>
         <span class="n">kmsec_to_kpcmyr</span><span class="p">,</span>
-        <span class="n">PROJECT_ROOT</span>
+        <span class="n">PROJECT_ROOT</span><span class="p">,</span>
+        <span class="n">suffix</span>  <span class="c1"># Add the suffix at the end of the tuple</span>
     <span class="p">)</span> <span class="k">for</span> <span class="n">rank_file</span> <span class="ow">in</span> <span class="n">rank_files</span><span class="p">]</span>
 
     <span class="c1"># Process all files in parallel</span>
@@ -5014,7 +5048,8 @@
 
         <span class="c1"># Process the files with a custom callback to update both progress bars</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">preprocess_phase_space_file</span><span class="p">,</span> <span class="n">preprocess_args</span><span class="p">):</span>
+        <span class="c1"># Use the modified arguments list</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">preprocess_phase_space_file</span><span class="p">,</span> <span class="n">preprocess_args_with_suffix</span><span class="p">):</span>
             <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
             <span class="n">counter_tqdm</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">bar_tqdm</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -6054,9 +6089,10 @@
 
             <span class="c1"># Process files and handle results as they arrive</span>
             <span class="n">processed_count_1d</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="c1"># Pass project root path explicitly to the worker function</span>
-            <span class="n">filtered_rank_files_with_root</span> <span class="o">=</span> <span class="p">[(</span><span class="n">fname</span><span class="p">,</span> <span class="n">PROJECT_ROOT</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filtered_rank_files</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">process_rank_file_for_1d_anim</span><span class="p">,</span> <span class="n">filtered_rank_files_with_root</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+            <span class="c1"># Prepare arguments including the suffix for the 1D animation worker</span>
+            <span class="n">args_for_1d_anim</span> <span class="o">=</span> <span class="p">[(</span><span class="n">fname</span><span class="p">,</span> <span class="n">PROJECT_ROOT</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">filtered_rank_files</span><span class="p">]</span>
+            <span class="c1"># Pass the modified arguments list to imap_unordered</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">process_rank_file_for_1d_anim</span><span class="p">,</span> <span class="n">args_for_1d_anim</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">snap</span><span class="p">,</span> <span class="n">radii</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">psi</span> <span class="o">=</span> <span class="n">result</span>
                     <span class="c1"># Append directly to global lists</span>
@@ -6123,9 +6159,10 @@
 
             <span class="c1"># Process the files with a custom callback to update both progress bars</span>
             <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="c1"># Pass project root path explicitly to the worker function</span>
-            <span class="n">unsorted_files_with_root</span> <span class="o">=</span> <span class="p">[(</span><span class="n">fname</span><span class="p">,</span> <span class="n">PROJECT_ROOT</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">unsorted_files</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">process_unsorted_rank_file</span><span class="p">,</span> <span class="n">unsorted_files_with_root</span><span class="p">):</span>
+            <span class="c1"># Prepare arguments including suffix for the unsorted worker</span>
+            <span class="n">args_for_unsorted</span> <span class="o">=</span> <span class="p">[(</span><span class="n">fname</span><span class="p">,</span> <span class="n">PROJECT_ROOT</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">unsorted_files</span><span class="p">]</span>
+            <span class="c1"># Pass modified args to imap</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">process_unsorted_rank_file</span><span class="p">,</span> <span class="n">args_for_unsorted</span><span class="p">):</span>
                 <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
                 <span class="n">counter_tqdm</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">bar_tqdm</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -6356,7 +6393,10 @@
 
             <span class="c1"># Process the files with a custom callback to update both progress bars</span>
             <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">process_sorted_energy_file</span><span class="p">,</span> <span class="n">unsorted_files_for_sort</span><span class="p">):</span>
+            <span class="c1"># Prepare arguments for the worker, including the suffix</span>
+            <span class="n">args_for_sorted_energy</span> <span class="o">=</span> <span class="p">[(</span><span class="n">fname</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">unsorted_files_for_sort</span><span class="p">]</span>
+            <span class="c1"># Pass the modified arguments</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">process_sorted_energy_file</span><span class="p">,</span> <span class="n">args_for_sorted_energy</span><span class="p">):</span>
                 <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
                 <span class="n">counter_tqdm</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">bar_tqdm</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>

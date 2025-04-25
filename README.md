@@ -1,9 +1,28 @@
 <div align="left">
-  <img src="img/NSphere.png" alt="NSphere Logo" width="60%">
+  <img src="img/NSphere.png" alt="NSphere logo" width="60%">
 </div>
 
-[![docs](https://github.com/kris-sigurdson/NSphere-Development/actions/workflows/docs-status.yml/badge.svg)](https://kris-sigurdson.github.io/NSphere-Development/)
+[![docs](https://github.com/kris-sigurdson/NSphere/actions/workflows/docs-status.yml/badge.svg)](https://kris-sigurdson.github.io/NSphere/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![arXiv](https://img.shields.io/badge/arXiv-2504.13996-b31b1b.svg)](https://arxiv.org/abs/2504.13996)
+
+Please see **Kamionkowski & Sigurdson (2025), arXiv:2504.13996** if you use **NSphere** (citation details below).
+
+---
+
+## Quick Navigation
+- [Overview](#overview)
+- [Numerical Implementation](#numerical-implementation)
+- [Core Components & Usage](#core-components--usage)
+- [Installation](#installation)
+- [Running NSphere](#running-nsphere)
+- [Examples](#examples)
+- [Data and Results Flow](#data-and-results-flow)
+- [Citation](#citation)
+- [Dependencies and Acknowledgments](#dependencies-and-acknowledgments)
+- [Building Documentation](#building-documentation-optional)
+
+---
 
 ## Overview
 
@@ -31,16 +50,16 @@ The simulation evolves a system of 𝑁 particles, often representing concentric
 
 This approach significantly reduces computational cost compared to traditional `𝑁²` 𝑁-body methods and mitigates issues like two-body relaxation effects, making it suitable for high-precision studies of spherical systems on standard hardware.
 
-*(For more technical details, see the full [Online Documentation](https://kris-sigurdson.github.io/NSphere-Development/))* <!-- Replace <hosted_docs_url> -->
+*(For more technical details, see the full [Online Documentation](https://kris-sigurdson.github.io/NSphere/))* <!-- Replace <hosted_docs_url> -->
 
 ## Core Components & Usage
 
 The primary components intended for user interaction reside in the project root directory:
 
 *   `./nsphere`: The compiled C executable. This is the core simulation engine that reads parameters and initial conditions, runs the N-body evolution according to the chosen physics and numerical method, and outputs simulation data (snapshots, profiles) to the `data/` directory.
-    *   See the [C API Documentation](https://kris-sigurdson.github.io/NSphere-Development/c_api/index.html) for details (primarily for developers). <!-- Replace <hosted_docs_url> -->
+    *   See the [C API Documentation](https://kris-sigurdson.github.io/NSphere/c_api/index.html) for details (primarily for developers). <!-- Replace <hosted_docs_url> -->
 *   `./nsphere_plot`: The main Python executable script for visualization and analysis. It reads output files from the `data/` directory and generates various plots (density profiles, mass profiles, energy conservation checks, trajectories, phase space diagrams) and animations, saving them to the `results/` directory.
-    *   See the [Python API Documentation](https://kris-sigurdson.github.io/NSphere-Development/python_api/index.html) for details on its functions (primarily for developers wanting to use the plotting library). <!-- Replace <hosted_docs_url> -->
+    *   See the [Python API Documentation](https://kris-sigurdson.github.io/NSphere/python_api/index.html) for details on its functions (for users and developers wanting to use the plotting library). <!-- Replace <hosted_docs_url> -->
 
 **Command-Line Help:** Both `./nsphere` and `./nsphere_plot` support the `--help` flag to display available command-line options and usage instructions.
 
@@ -48,7 +67,7 @@ The primary components intended for user interaction reside in the project root 
 *   `./nsphere_animations`: Generates standard profile and phase-space animations.
 *   `./nsphere_distributions`: Creates histograms comparing initial and final 1D distributions (radius, velocity, etc.).
 *   `./nsphere_2d_histograms`: Generates initial and final 2D phase-space histograms.
-*   See the [Command-Line Usage Guide](https://kris-sigurdson.github.io/NSphere-Development/usage/command_line.html) for details on these wrappers. <!-- Replace <hosted_docs_url> -->
+*   See the [Command-Line Usage Guide](https://kris-sigurdson.github.io/NSphere/usage/command_line.html) for details on these wrappers. <!-- Replace <hosted_docs_url> -->
 
 ## Installation
 
@@ -66,14 +85,14 @@ Follow these steps to obtain the code, install dependencies, and compile NSphere
    All subsequent commands should be run from within this `NSphere` directory.
 
 **2. Install System Dependencies:**
-   NSphere requires several system dependencies: core C libraries (GSL, FFTW3, OpenMP), Python 3 (with pip and venv), and standard build tools (Make, a C compiler like Clang or GCC). An automated script is provided to attempt installation on common systems.
+   NSphere requires several system dependencies: core C libraries (GSL, FFTW3, OpenMP), Python 3 (with pip and venv), and standard build tools (Make, our suggested C compiler Clang). An automated script is provided to attempt installation on common systems.
    *   **Run the install script (Linux, macOS, Windows/MSYS2):**
        Navigate to the cloned `NSphere` directory in your terminal and run:
        ```bash
        bash install_nsphere.sh
        ```
        This will attempt to use your system's package manager (`apt`, `dnf`, `pacman`, `brew`) to install the full set of required system dependencies (C libraries, Python tools, build tools). The script is optimized for each platform and installs platform-specific Python packages when appropriate and necessary.
-       *   **Windows Users:** This script requires the [MSYS2](https://www.msys2.org/) environment. Run the script from the **MSYS2 CLANG64** shell.
+       *   **Windows Users:** This script requires the [MSYS2](https://www.msys2.org/) environment. Run the script from the **MSYS2 CLANG64** shell. Note: Windows Subsystem for Linux (WSL2) users should follow the Linux instructions.
    *   **Manual Installation (If script fails or for other systems):**
        See the detailed manual installation commands for specific platforms below.
 
@@ -153,9 +172,9 @@ For Windows with MSVC:
 ```powershell
 # In Developer Command Prompt for VS or regular PowerShell
 python -m venv venv\nsphere
-venv\nsphere\Scripts\activate   # For Command Prompt
-# OR
 venv\nsphere\Scripts\Activate.ps1   # For PowerShell
+# OR
+# venv\nsphere\Scripts\activate   # For Command Prompt
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
@@ -202,7 +221,7 @@ deactivate
 
 A Jupyter Notebook example demonstrating how to load and visualize simulation output is available:
 
-*   **`examples/nsphere_notebook_example1.ipynb`**: Shows how to create phase-space and density profile animations from the `.dat` files generated by `./nsphere`. This provides a starting point for custom analysis and visualization using Python. See the notebook itself for prerequisites and usage instructions.
+*   **`examples/nsphere_notebook_example1.ipynb`**: Shows how to create phase-space and density profile animations from the `.dat` files generated by `./nsphere`. This provides a starting point for custom analysis and visualization using Python and demonstrates how to read NSphere binary data formats. See the notebook itself for prerequisites and usage instructions.
 
 You can explore this notebook using Jupyter Lab or Jupyter Notebook after activating the Python environment (`source ./activate_nsphere` from the project root) and navigating to the `examples/` directory.
 
@@ -213,6 +232,52 @@ The NSphere workflow typically involves simulation followed by analysis:
 1.  **Simulation (`./nsphere`):** The C executable, `./nsphere`, handles the core physics simulation. It takes command-line arguments or reads configuration to set up parameters like particle count, simulation time, and physics models. It may read initial particle configurations from the `init/` directory (if present and configured). During execution, it calculates particle trajectories under self-gravity and any additional physics, outputting results primarily to the `data/` directory (created in the current working directory if it doesn't exist). This output includes time-series data, particle snapshots at specified intervals (`Rank_Mass_Rad_VRad*.dat`), and potentially theoretically calculated profiles (`massprofile*.dat`, etc.). A `lastparams*.dat` file is often written to record key parameters of the run.
 
 2.  **Visualization/Analysis (`./nsphere_plot` and wrappers):** The Python executable, `./nsphere_plot`, along with its convenience wrappers, processes the files generated by the simulation, expecting them in the `data/` directory relative to the current working directory. It typically uses a `--suffix` argument to identify the specific simulation run's data files. Based on command-line flags, these scripts read the relevant data, perform analysis, and use the Matplotlib library to generate various outputs (plots as `.png` files, animations as `.gif` files) which are saved to the `results/` directory (also created in the current working directory if needed).
+
+## Citation
+
+For Methods, Science, and Algorithms please cite:
+
+**Paper Citation:**
+
+*   Kamionkowski, M. & Sigurdson, K. (2025).
+    "Evolution of self-gravitating spherical dark-matter halos with and without new physics.",
+    arXiv preprint arXiv:2504.13996 [astro-ph.GA]. \
+    [https://arxiv.org/abs/2504.13996](https://arxiv.org/abs/2504.13996)
+
+*BibTeX for Paper:*
+````bibtex
+@article{KamionkowskiSigurdson2025,
+  author       = {Kamionkowski, Marc and Sigurdson, Kris},
+  title        = {Evolution of self-gravitating spherical dark-matter halos with and without new physics},
+  journal      = {arXiv e-prints},
+  year         = {2025},
+  eprint       = {2504.13996},
+  archivePrefix= {arXiv},
+  primaryClass = {astro-ph.GA},
+  url          = {https://arxiv.org/abs/2504.13996}
+}
+````
+
+---
+If you wish to reference a specific software version please cite:
+
+**Software Citation (v0.1.1):**
+
+*   Sigurdson, K., & Kamionkowski, M. (2025). *NSphere: Spherical N-body Simulation Code* (Version 0.1.1) [Software]. GitHub. https://github.com/kris-sigurdson/NSphere
+
+*BibTeX for Software:*
+````bibtex
+@software{SigurdsonKamionkowski2025NSphereSoftware,
+  author       = {Sigurdson, Kris and Kamionkowski, Marc},
+  title        = {{NSphere: Spherical N-body Simulation Code}},
+  version      = {0.1.1},
+  year         = {2025},
+  publisher    = {GitHub},
+  url          = {https://github.com/kris-sigurdson/NSphere}
+}
+````
+
+*(The "Cite this repository" button on the GitHub sidebar primarily provides the paper citation details via `CITATION.cff`.)*
 
 ## Dependencies and Acknowledgments
 
@@ -272,7 +337,6 @@ Developers can build the documentation locally. This requires installing `Doxyge
 4.  **Build Sphinx HTML:** From the same source directory, build the HTML documentation:
     ```bash
     make html
-    cd ../.. # Return to project root
     ```
 
 The generated HTML documentation will be located in the `docs/` directory (e.g., `docs/index.html`).
