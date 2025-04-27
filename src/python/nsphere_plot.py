@@ -19,6 +19,8 @@ showing_help = '--help' in sys.argv or '-h' in sys.argv
 
 # Import other modules
 import numpy as np
+import matplotlib
+matplotlib.use('Agg', force=True)
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from scipy.stats import energy_distance
@@ -50,29 +52,40 @@ import threading
 def find_project_root():
     """
     Determines the project root directory.
-    
+
     Returns
     -------
     str
         Path to the project root directory.
-    
+
     Notes
     -----
     The project root is identified by the presence of a 'src' directory.
+    Uses path normalization for cross-platform compatibility.
     """
     script_path = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_path)
     
-    # Navigate up from script directory until src directory is found
-    potential_root = os.path.dirname(os.path.dirname(script_dir))
+    if os.path.basename(script_dir) == 'python':
+        potential_root = os.path.dirname(os.path.dirname(script_dir))
+    else:
+        potential_root = script_dir
     
-    # Basic check for a known directory that should be at the root
+    potential_root = os.path.normpath(potential_root)
+    
     if os.path.isdir(os.path.join(potential_root, 'src')):
         return potential_root
-    else:
-        # Fallback if structure is unexpected
-        print(f"Warning: Could not verify project root via 'src' directory. Using derived directory.", file=sys.stderr)
-        return potential_root
+    
+    parent_dir = os.path.dirname(potential_root)
+    if os.path.isdir(os.path.join(parent_dir, 'src')):
+        return parent_dir
+        
+    grandparent_dir = os.path.dirname(parent_dir)
+    if os.path.isdir(os.path.join(grandparent_dir, 'src')):
+        return grandparent_dir
+    
+    print(f"Warning: Could not verify project root via 'src' directory. Using derived directory: {potential_root}", file=sys.stderr)
+    return potential_root
 
 # Set up project paths
 PROJECT_ROOT = find_project_root()
@@ -4162,29 +4175,43 @@ tracked_ids_for_energy = []
 def process_sorted_energy_file(task_data):
     """
     Process an unsorted rank file for energy-time plot, extracting data for specific tracked particle IDs.
-    This function is intended to be used with multiprocessing, so it needs to be at the module level.
-
+    
     Parameters
     ----------
-    fname : str
-        The filename to process.
+    task_data : tuple
+        A tuple containing (fname, local_suffix) where:
+        - fname is the path to the unsorted Rank data file
+        - local_suffix is the suffix for file identification
 
     Returns
     -------
     tuple or None
         (snapshot_number, energy_data) if successful or None if there was an error.
     """
-    global tracked_ids_for_energy, suffix, ncol_Rank_Mass_Rad_VRad_unsorted
+    # Unpack arguments
+    fname, local_suffix = task_data
+    global ncol_Rank_Mass_Rad_VRad_unsorted
 
-    m = re.search(r'Rank_Mass_Rad_VRad_unsorted_t(\d+)' + re.escape(suffix) + r'\.dat$', fname)
+    # Extract the timestep from the filename
+    m = re.search(r'Rank_Mass_Rad_VRad_unsorted_t(\d+)' + re.escape(local_suffix) + r'\.dat$', fname)
     if not m:
+        logger.warning(f"Regex failed for sorted energy file {fname} with suffix '{local_suffix}'")
         return None
 
     snap = int(m.group(1))
 
+    # Reload tracked IDs inside the worker
+    lowest_radius_ids_file = f"data/lowest_radius_ids{local_suffix}.dat"
+    id_data = safe_load_and_filter_bin(lowest_radius_ids_file, ncols=2, dtype=[np.int32, np.float32])
+    if id_data is None or len(id_data) < 1:
+         logger.warning(f"Worker failed to load IDs from {lowest_radius_ids_file}")
+         return None
+    max_particles = min(10, id_data.shape[0])
+    local_tracked_ids = id_data[:max_particles, 0].astype(int)
+
     # Use helper function to load data for specific particle IDs
     tracked_energy_data = safe_load_particle_ids_bin(
-        fname, ncols=ncol_Rank_Mass_Rad_VRad_unsorted, particle_ids=tracked_ids_for_energy, dtype=np.float32
+        fname, ncols=ncol_Rank_Mass_Rad_VRad_unsorted, particle_ids=local_tracked_ids, dtype=np.float32
     )
 
     if tracked_energy_data is not None and tracked_energy_data.shape[0] > 0:
@@ -4229,32 +4256,30 @@ def phase_space_process_rank_file(fname):
 
     return (snap, data)
 
-def process_unsorted_rank_file(task_data):
+def process_unsorted_rank_file(task_data_with_suffix):
     """
     Process an unsorted rank file and return the snapshot number and energy values.
-
+    
     Parameters
     ----------
-    task_data : str or tuple
-        Either a path to the unsorted Rank data file (e.g., Rank_Mass_Rad_VRad_unsorted_t...),
-        or a tuple containing (fname, project_root_path) where project_root_path is the
-        explicit path to the project root directory.
+    task_data_with_suffix : tuple
+        A tuple containing (fname, project_root_path, local_suffix) where:
+        - fname is the path to the unsorted Rank data file
+        - project_root_path is the explicit path to the project root directory
+        - local_suffix is the suffix for file identification
 
     Returns
     -------
     tuple or None
         (snapshot_number, energy_values) if successful or None if there was an error.
     """
-    # Handle both string and tuple input for backward compatibility
-    if isinstance(task_data, tuple):
-        fname, project_root_path = task_data
-    else:
-        fname = task_data
-        project_root_path = None
-        
+    # Unpack arguments
+    fname, project_root_path, local_suffix = task_data_with_suffix
+    
     # Extract the timestep from the filename
-    mo = re.search(r'Rank_Mass_Rad_VRad_unsorted_t(\d+)' + re.escape(suffix) + r'\.dat$', fname)
+    mo = re.search(r'Rank_Mass_Rad_VRad_unsorted_t(\d+)' + re.escape(local_suffix) + r'\.dat$', fname)
     if not mo:
+        logger.warning(f"Regex failed for unsorted file {fname} with suffix '{local_suffix}'")
         return None
 
     snap = int(mo.group(1))
@@ -4378,9 +4403,10 @@ def process_rank_file(fname):
     gc.collect()
     return (snap, decimated)
 
-def process_rank_file_for_1d_anim(task_data):
+def process_rank_file_for_1d_anim(task_data_with_suffix):
     """
     Processes a single sorted Rank snapshot file for 1D animations.
+    Now accepts suffix explicitly.
 
     Loads only the required columns (Mass, Radius, Psi, Density), sorts by
     radius, filters invalid data, fits linear splines to Mass, Psi and Density,
@@ -4389,10 +4415,11 @@ def process_rank_file_for_1d_anim(task_data):
 
     Parameters
     ----------
-    task_data : str or tuple
-        Either a path to the sorted Rank data file (e.g., Rank_Mass_Rad_VRad_sorted_t...),
-        or a tuple containing (fname, project_root_path) where project_root_path is the
-        explicit path to the project root directory.
+    task_data_with_suffix : tuple
+        A tuple containing (fname, project_root_path, local_suffix) where:
+        - fname is the path to the sorted Rank data file
+        - project_root_path is the explicit path to the project root directory
+        - local_suffix is the suffix for file identification
 
     Returns
     -------
@@ -4402,13 +4429,10 @@ def process_rank_file_for_1d_anim(task_data):
         where arrays have the downsampled length.
         Returns None if loading, processing, or spline fitting fails.
     """
-    # Handle both string and tuple input for backward compatibility
-    if isinstance(task_data, tuple):
-        fname, project_root_path = task_data
-    else:
-        fname = task_data
-        project_root_path = None # Will use global or try to determine
-    global suffix, ncol_Rank_Mass_Rad_VRad_sorted # Need access to these
+    # Unpack arguments including the suffix
+    fname, project_root_path, local_suffix = task_data_with_suffix
+    # No longer need: global suffix
+    global ncol_Rank_Mass_Rad_VRad_sorted # Keep this global if needed elsewhere in function
     
     # Define the dtype list for the *entire* row of the sorted file
     sorted_rank_dtype_list = [np.int32, np.float32, np.float32, np.float32, np.float32, np.float32, np.float32, np.float32]
@@ -4420,7 +4444,11 @@ def process_rank_file_for_1d_anim(task_data):
     load_idx_map = {1: 0, 2: 1, 4: 2, 7: 3} # Original Col -> Index in loaded data
     radius_load_idx = load_idx_map[2] # Index of Radius within loaded data
 
-    snap_num = _extract_Rank_snapnum(fname, suffix) # Use existing helper
+    # Extract snapshot number from filename
+    snap_num = _extract_Rank_snapnum(fname, local_suffix)
+    if snap_num == 999999999:
+        logger.warning(f"Could not extract valid snapshot number from {fname} using suffix '{local_suffix}' for 1D anim. Skipping.")
+        return None
 
     try:
         # Load only the necessary columns
@@ -4520,25 +4548,29 @@ def process_rank_file_for_1d_anim(task_data):
     finally:
         gc.collect() # Cleanup worker memory
 
-def preprocess_phase_space_file(rank_file_data):
+def preprocess_phase_space_file(rank_file_data_with_suffix):
     """
     Preprocess a single Rank file for phase space animation.
-    This function needs to be at the module level for multiprocessing to work.
 
     Parameters
     ----------
-    rank_file_data : tuple
-        Tuple containing (rank_file, suffix, ncol, max_r_all, max_v_all, nbins, kmsec_to_kpcmyr, project_root_path).
+    rank_file_data_with_suffix : tuple
+        Tuple containing (rank_file, placeholder, ncol, max_r_all, max_v_all, nbins, 
+        kmsec_to_kpcmyr, project_root_path, local_suffix).
 
     Returns
     -------
     tuple or None
         (snap_num, H, frame_vmax) if successful or None if processing failed.
     """
-    rank_file, suffix, ncol, max_r_all, max_v_all, nbins, kmsec_to_kpcmyr, project_root_path = rank_file_data
+    # Unpack arguments including the suffix
+    rank_file, _, ncol, max_r_all, max_v_all, nbins, kmsec_to_kpcmyr, project_root_path, local_suffix = rank_file_data_with_suffix
 
     # Extract snapshot number for labeling
-    snap_num = _extract_Rank_snapnum(rank_file, suffix)
+    snap_num = _extract_Rank_snapnum(rank_file, local_suffix)
+    if snap_num == 999999999:
+        logger.warning(f"Could not extract valid snapshot number from {rank_file} using suffix '{local_suffix}' for phase space. Skipping.")
+        return None
 
     # Load the snapshot data
     data = safe_load_and_filter_bin(
@@ -4665,15 +4697,17 @@ def generate_phase_space_animation(suffix, fps=10):
     # Log to file only, keep console output minimal
     log_message(f"Processing {len(rank_files)} files for phase space animation...")
 
-    preprocess_args = [(
+    # Prepare data for parallel preprocessing, ensuring suffix is explicitly passed
+    preprocess_args_with_suffix = [(
         rank_file,
-        suffix,
+        None,  # Placeholder for original suffix position
         ncol_Rank_Mass_Rad_VRad_sorted,
         max_r_all,
         max_v_all,
         nbins,
         kmsec_to_kpcmyr,
-        PROJECT_ROOT
+        PROJECT_ROOT,
+        suffix  # Add the suffix at the end of the tuple
     ) for rank_file in rank_files]
 
     # Process all files in parallel
@@ -4711,7 +4745,8 @@ def generate_phase_space_animation(suffix, fps=10):
 
         # Process the files with a custom callback to update both progress bars
         results = []
-        for result in pool.imap(preprocess_phase_space_file, preprocess_args):
+        # Use the modified arguments list
+        for result in pool.imap(preprocess_phase_space_file, preprocess_args_with_suffix):
             results.append(result)
             counter_tqdm.update(1)
             bar_tqdm.update(1)
@@ -5727,9 +5762,10 @@ def process_rank_files(suffix, start_snap, end_snap, step_snap):
 
             # Process files and handle results as they arrive
             processed_count_1d = 0
-            # Pass project root path explicitly to the worker function
-            filtered_rank_files_with_root = [(fname, PROJECT_ROOT) for fname in filtered_rank_files]
-            for result in pool.imap_unordered(process_rank_file_for_1d_anim, filtered_rank_files_with_root, chunksize=2):
+            # Prepare arguments including the suffix for the 1D animation worker
+            args_for_1d_anim = [(fname, PROJECT_ROOT, suffix) for fname in filtered_rank_files]
+            # Pass the modified arguments list to imap_unordered
+            for result in pool.imap_unordered(process_rank_file_for_1d_anim, args_for_1d_anim, chunksize=2):
                 if result is not None:
                     snap, radii, mass, density, psi = result
                     # Append directly to global lists
@@ -5796,9 +5832,10 @@ def process_rank_files(suffix, start_snap, end_snap, step_snap):
 
             # Process the files with a custom callback to update both progress bars
             results = []
-            # Pass project root path explicitly to the worker function
-            unsorted_files_with_root = [(fname, PROJECT_ROOT) for fname in unsorted_files]
-            for result in pool.imap(process_unsorted_rank_file, unsorted_files_with_root):
+            # Prepare arguments including suffix for the unsorted worker
+            args_for_unsorted = [(fname, PROJECT_ROOT, suffix) for fname in unsorted_files]
+            # Pass modified args to imap
+            for result in pool.imap(process_unsorted_rank_file, args_for_unsorted):
                 results.append(result)
                 counter_tqdm.update(1)
                 bar_tqdm.update(1)
@@ -6023,7 +6060,10 @@ def generate_sorted_energy_plot(suffix):
 
             # Process the files with a custom callback to update both progress bars
             results = []
-            for result in pool.imap(process_sorted_energy_file, unsorted_files_for_sort):
+            # Prepare arguments for the worker, including the suffix
+            args_for_sorted_energy = [(fname, suffix) for fname in unsorted_files_for_sort]
+            # Pass the modified arguments
+            for result in pool.imap(process_sorted_energy_file, args_for_sorted_energy):
                 results.append(result)
                 counter_tqdm.update(1)
                 bar_tqdm.update(1)

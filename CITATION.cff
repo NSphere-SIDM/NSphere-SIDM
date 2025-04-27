@@ -6,7 +6,7 @@ authors: # Software authors
     given-names: Kris
   - family-names: Kamionkowski
     given-names: Marc
-version: "0.1.1"
+version: "0.1.2"
 license: "Apache-2.0"
 repository: "https://github.com/kris-sigurdson/NSphere"
 date-released: 2025-04-24 # Adjust date

@@ -286,6 +286,10 @@ if [ -f "$ACTIVATION_SCRIPT" ]; then
          if [ $? -eq 0 ]; then
              echo "Environment '$VENV_NAME' activated."
              echo "Your prompt should now show '($VENV_NAME)'."
+             echo "-------------------------------------------------------------------"
+             echo "If '($VENV_NAME)' is not in your prompt, you didn't run with source."
+             echo "Run either 'source ./activate_nsphere' or '. ./activate_nsphere'."
+             echo "-------------------------------------------------------------------"
              echo "You can now run NSphere executables like './nsphere_plot'."
              
              # Check environment configuration 

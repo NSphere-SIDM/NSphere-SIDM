@@ -261,16 +261,16 @@ For Methods, Science, and Algorithms please cite:
 ---
 If you wish to reference a specific software version please cite:
 
-**Software Citation (v0.1.1):**
+**Software Citation (v0.1.2):**
 
-*   Sigurdson, K., & Kamionkowski, M. (2025). *NSphere: Spherical N-body Simulation Code* (Version 0.1.1) [Software]. GitHub. https://github.com/kris-sigurdson/NSphere
+*   Sigurdson, K., & Kamionkowski, M. (2025). *NSphere: Spherical N-body Simulation Code* (Version 0.1.2) [Software]. GitHub. https://github.com/kris-sigurdson/NSphere
 
 *BibTeX for Software:*
 ````bibtex
 @software{SigurdsonKamionkowski2025NSphereSoftware,
   author       = {Sigurdson, Kris and Kamionkowski, Marc},
   title        = {{NSphere: Spherical N-body Simulation Code}},
-  version      = {0.1.1},
+  version      = {0.1.2},
   year         = {2025},
   publisher    = {GitHub},
   url          = {https://github.com/kris-sigurdson/NSphere}
