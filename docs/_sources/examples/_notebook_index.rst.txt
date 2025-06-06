@@ -3,3 +3,4 @@
    :caption: Example Notebooks:
 
    notebooks/nsphere_notebook_example1
+   notebooks/nsphere_notebook_example2

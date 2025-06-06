@@ -26,9 +26,42 @@ This is the core C program that runs the N-spherical shell simulation.
 
 **Options:**
 
+Basic Control & Execution
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. option:: --help
 
    Show the usage message and exit.
+
+.. option:: --log
+
+   Enable writing detailed logs to ``log/nsphere.log``. Useful for debugging
+   and tracking simulation progress in detail.
+   [Default: Off]
+
+.. option:: --tag <string>
+
+   Append a custom string tag to the automatically generated suffix for most
+   output filenames. Useful for distinguishing different runs with the same
+   core parameters.
+   [Default: None]
+
+.. option:: --save <subarg> [subarg...]
+
+   Controls which major data products are saved. Can specify multiple sub-arguments;
+   if conflicting levels are given, the one enabling the most output takes effect.
+   [Default: all]
+
+   raw-data
+     : Saves only basic particle output files (`particles.dat`, `particlesfinal.dat`).
+   psi-snaps
+     : In addition to `raw-data`, saves potential snapshots (`Psi_methodA_t*.dat`) and enables dynamic Psi calculation.
+   full-snaps
+     : In addition to `psi-snaps` output, saves full snapshot data (`Rank_Mass_Rad_VRad_*.dat`) and enables dynamic rank calculation.
+   debug-energy
+     : Enables energy tracking mode. In addition to `full-snaps` output, saves a detailed energy diagnostic file (`debug_energy_compare.dat`) for particle tracking.
+   all
+     : Saves all possible outputs, equivalent to enabling `debug-energy`.
 
 .. option:: --restart
 
@@ -37,6 +70,9 @@ This is the core C program that runs the N-spherical shell simulation.
    to resume processing. If complete data is found for the simulation phase,
    it may be skipped entirely. Incompatible with ``--readinit`` and ``--writeinit``.
    [Default: Off]
+
+Simulation Setup
+~~~~~~~~~~~~~~~
 
 .. option:: --nparticles <int>
 
@@ -61,12 +97,60 @@ This is the core C program that runs the N-spherical shell simulation.
    Number of simulation timesteps between each major data write/snapshot interval.
    [Default: 100]
 
-.. option:: --tag <string>
+.. option:: --tfinal <int>
 
-   Append a custom string tag to the automatically generated suffix for most
-   output filenames. Useful for distinguishing different runs with the same
-   core parameters.
-   [Default: None]
+   Sets the total simulation duration as a multiple of the characteristic
+   dynamical time (tdyn). Duration = ``<int>`` * tdyn.
+   [Default: 5]
+
+.. option:: --ftidal <float>
+
+   Specifies the fraction of the outermost particles (by initial radius)
+   to remove via tidal stripping before starting the simulation. Value must
+   be between 0.0 (no stripping) and 1.0. The initial number of generated
+   particles is increased to ensure ``--nparticles`` remain after stripping.
+   [Default: 0.0]
+
+Initial Conditions & I/O
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. option:: --readinit <file>
+
+   Read initial particle conditions (positions, velocities, etc.) directly
+   from the specified binary ``<file>`` located inside the ``init/`` subdirectory,
+   instead of generating them. The file must have been created previously
+   using ``--writeinit``. Incompatible with ``--restart`` and ``--writeinit``.
+   [Default: Off]
+
+.. option:: --writeinit <file>
+
+   Generate initial particle conditions and save them to the specified binary
+   ``<file>`` inside the ``init/`` subdirectory. The simulation then
+   proceeds normally. Incompatible with ``--restart`` and ``--readinit``.
+   [Default: Off]
+
+.. option:: --master-seed <int>
+
+   Set master seed to derive all other seeds deterministically.
+   When provided: IC seed = master_seed + 1, SIDM seed = master_seed + 2.
+   Takes precedence over ``--load-seeds`` but not over direct seed options.
+   [Default: time-based]
+
+.. option:: --load-seeds
+
+   Load IC and SIDM seeds from previous run's seed files.
+   Looks for ``last_initial_seed_{suffix}.dat`` and ``last_sidm_seed_{suffix}.dat``.
+   Lowest priority - only used if seeds not set by other options.
+   [Default: Off]
+
+.. option:: --init-cond-seed <int>
+
+   Set seed specifically for initial condition generation.
+   Highest priority - overrides both ``--master-seed`` and ``--load-seeds``.
+   [Default: derived from master seed, loaded from file, or time-based]
+
+Numerical Methods
+~~~~~~~~~~~~~~~~
 
 .. option:: --method <int>
 
@@ -110,56 +194,69 @@ This is the core C program that runs the N-spherical shell simulation.
    4
      : Selects Sequential Insertion Sort.
 
-.. option:: --readinit <file>
+Halo Profile Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   Read initial particle conditions (positions, velocities, etc.) directly
-   from the specified binary ``<file>`` located inside the ``init/`` subdirectory,
-   instead of generating them. The file must have been created previously
-   using ``--writeinit``. Incompatible with ``--restart`` and ``--writeinit``.
+.. option:: --halo-mass <float>
+
+   Total halo mass in solar masses (M☉) for the selected profile. This sets
+   the overall mass normalization of the initial conditions.
+   [Default: 1.15e9]
+
+.. option:: --profile <type>
+
+   Select the halo density profile type for initial conditions.
+   
+   - ``nfw``: NFW profile with exponential cutoff
+   - ``cored``: Cored Plummer-like profile
+   
+   [Default: nfw]
+
+.. option:: --scale-radius <float>
+
+   Scale radius in kpc for the selected profile. For NFW profiles this is
+   the traditional scale radius rs; for cored profiles this is the core radius.
+   [Default: 1.18]
+
+.. option:: --cutoff-factor <float>
+
+   Sets the outer truncation radius as a multiple of the scale radius. The
+   maximum radius rmax = cutoff-factor × scale-radius.
+   [Default: 85.0]
+
+.. option:: --falloff-factor <float>
+
+   NFW-specific concentration parameter that controls the sharpness of the
+   exponential cutoff at large radii. Only used for NFW profiles.
+   [Default: 19.0]
+
+SIDM Physics
+~~~~~~~~~~~~
+
+.. option:: --sidm
+
+   Enable Self-Interacting Dark Matter (SIDM) scattering physics.
+   Activates particle-particle scattering with velocity-dependent cross-section.
    [Default: Off]
 
-.. option:: --writeinit <file>
+   Set seed specifically for SIDM scattering calculations.
+   Highest priority - overrides both ``--master-seed`` and ``--load-seeds``.
+   [Default: derived from master seed, loaded from file, or time-based]
 
-   Generate initial particle conditions and save them to the specified binary
-   ``<file>`` inside the ``init/`` subdirectory. The simulation then
-   proceeds normally. Incompatible with ``--restart`` and ``--readinit``.
-   [Default: Off]
+.. option:: --sidm-mode <serial|parallel>
 
-.. option:: --tfinal <int>
+   Select SIDM execution mode.
+   
+   - ``serial``: Single-threaded SIDM calculations
+   - ``parallel``: Multi-threaded SIDM using OpenMP (requires OpenMP support)
+   
+   [Default: parallel]
 
-   Sets the total simulation duration as a multiple of the characteristic
-   dynamical time (tdyn). Duration = ``<int>`` * tdyn.
-   [Default: 5]
+.. option:: --sidm-kappa <float>
 
-.. option:: --ftidal <float>
-
-   Specifies the fraction of the outermost particles (by initial radius)
-   to remove via tidal stripping before starting the simulation. Value must
-   be between 0.0 (no stripping) and 1.0. The initial number of generated
-   particles is increased to ensure ``--nparticles`` remain after stripping.
-   [Default: 0.0]
-
-.. option:: --save <subarg> [subarg...]
-
-   Controls which major data products are saved. Can specify multiple sub-arguments;
-   if conflicting levels are given, the one enabling the most output takes effect.
-   [Default: all]
-
-   raw-data
-     : Saves only basic particle output files (`particles.dat`, `particlesfinal.dat`).
-   psi-snaps
-     : In addition to `raw-data`, saves potential snapshots (`Psi_methodA_t*.dat`) and enables dynamic Psi calculation.
-   full-snaps
-     : In addition to `psi-snaps` output, saves full snapshot data (`Rank_Mass_Rad_VRad_*.dat`) and enables dynamic rank calculation.
-   debug-energy
-     : Enables energy tracking mode. In addition to `full-snaps` output, saves a detailed energy diagnostic file (`debug_energy_compare.dat`) for particle tracking.
-   all
-     : Saves all possible outputs, equivalent to enabling `debug-energy`.
-
-.. option:: --enable-log
-
-   Enable detailed logging to ``log/nsphere.log``.
-   [Default: Off]
+   SIDM opacity parameter kappa in cm²/g. Controls the self-interaction
+   cross-section strength.
+   [Default: 50.0]
 
 Last Parameters File (`lastparams.dat`)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -178,6 +275,40 @@ The format of this file is a single line containing:
 This allows the ``nsphere_plot`` script (and related wrappers) to easily find
 and use the parameters from the very last simulation run by default when no
 ``--suffix`` is specified.
+
+Last Seed Files (`last_initial_seed.dat`, `last_sidm_seed.dat`)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In addition to recording simulation parameters, ``nsphere`` also saves the specific
+seeds used for its random number generators to ensure reproducibility of stochastic
+processes. These are stored in separate suffixed files, typically named:
+
+* ``data/last_initial_seed_<suffix>.dat``
+* ``data/last_sidm_seed_<suffix>.dat``
+
+Where ``<suffix>`` is the same suffix used for the ``lastparams_<suffix>.dat`` file,
+determined by the run's command-line options and core parameters.
+
+Similar to the parameters file, standard non-suffixed versions are also created
+as symbolic links (on Unix-like systems) or direct copies (on Windows):
+
+* ``data/last_initial_seed.dat``
+* ``data/last_sidm_seed.dat``
+
+Each seed file contains a single line with one unsigned long integer representing
+the seed value used for that specific random number generator component.
+``last_initial_seed`` stores the seed for initial condition generation, while
+``last_sidm_seed`` stores the base seed for SIDM scattering calculations.
+For parallel SIDM processing, per-thread generators are seeded deterministically
+from this base value.
+
+These seed files are essential for achieving bit-for-bit reproducibility of
+simulations. When ``nsphere`` is run with the same command-line parameters
+(ensuring the same ``<suffix>``), the ``--load-seeds`` option instructs it to
+read the matching suffixed files to initialize its random number generators, enabling exact
+reproduction of previous runs. Direct seed specification via ``--master-seed``,
+``--init-cond-seed``, or ``--sidm-seed`` takes precedence over loaded values.
+The seed files always reflect the seeds *actually used* for each run, regardless
+of their source.
 
 Plotting & Animation (`nsphere_plot`)
 ------------------------------------

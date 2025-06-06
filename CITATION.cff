@@ -1,23 +1,35 @@
 cff-version: 1.2.0
-message: "If you use NSphere, please cite the paper (Kamionkowski & Sigurdson, 2025, arXiv:2504.13996). See README for BibTeX."
-title: "NSphere: Spherical N-body Simulation Code"
+message: "If you use NSphere-SIDM, please cite the SIDM paper (Kamionkowski, Sigurdson & Slone, 2025, arXiv:2506.04334). See README for BibTeX."
+title: "NSphere-SIDM: Spherical N-body Simulation Code for Self-Interacting Dark Matter"
 authors: # Software authors
   - family-names: Sigurdson
     given-names: Kris
   - family-names: Kamionkowski
     given-names: Marc
-version: "0.1.2"
+version: "0.1.6"
 license: "Apache-2.0"
-repository: "https://github.com/kris-sigurdson/NSphere"
-date-released: 2025-04-24 # Adjust date
+repository: "https://github.com/NSphere-SIDM/NSphere-SIDM"
+date-released: 2025-06-05
 preferred-citation:
   type: article
-  title: "Evolution of self-gravitating spherical dark-matter halos with and without new physics"
+  title: "Numerical evolution of self-gravitating halos of self-interacting dark matter"
   authors: # Paper author order
   - family-names: Kamionkowski
     given-names: Marc
   - family-names: Sigurdson
     given-names: Kris
+  - family-names: Slone
+    given-names: Oren
   year: 2025
   # TODO: Add DOI when published
-  url: "https://arxiv.org/abs/2504.13996"
+  url: "https://arxiv.org/abs/2506.04334"
+references:
+  - type: article
+    title: "Evolution of self-gravitating spherical dark-matter halos with and without new physics"
+    authors:
+    - family-names: Kamionkowski
+      given-names: Marc
+    - family-names: Sigurdson
+      given-names: Kris
+    year: 2025
+    url: "https://arxiv.org/abs/2504.13996"

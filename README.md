@@ -1,16 +1,83 @@
+# NSphere-SIDM
+
+**Self-Interacting Dark Matter (SIDM) fork of [NSphere](https://github.com/kris-sigurdson/NSphere)**
+
+Implements SIDM scattering physics and many general enhancements.  
+For a comprehensive list of changes see the [change log](CHANGELOG.md).
+
 <div align="left">
   <img src="img/NSphere.png" alt="NSphere logo" width="60%">
 </div>
 
-[![docs](https://github.com/kris-sigurdson/NSphere/actions/workflows/docs-status.yml/badge.svg)](https://kris-sigurdson.github.io/NSphere/)
+[![docs](https://github.com/NSphere-SIDM/NSphere-SIDM/actions/workflows/docs-status.yml/badge.svg)](https://nsphere-sidm.github.io/NSphere-SIDM/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![arXiv](https://img.shields.io/badge/arXiv-2504.13996-b31b1b.svg)](https://arxiv.org/abs/2504.13996)
+[![arXiv](https://img.shields.io/badge/arXiv-2506.04334-b31b1b.svg)](https://arxiv.org/abs/2506.04334)
 
-Please see **Kamionkowski & Sigurdson (2025), arXiv:2504.13996** if you use **NSphere** (citation details below).
+Please see **Kamionkowski & Sigurdson (2025), [arXiv:2504.13996](https://arxiv.org/abs/2504.13996)** if you use **NSphere** (citation details below).  
+The SIDM physics implementation is described in **Kamionkowski, Sigurdson & Slone (2025), [arXiv:2506.04334](https://arxiv.org/abs/2506.04334)**.
+
+---
+
+<div align="center">
+
+## Numerical evolution of self-gravitating halos of self-interacting dark matter
+
+Marc Kamionkowski,<sup>1</sup> Kris Sigurdson,<sup>2</sup> and Oren Slone<sup>3</sup>
+
+<sub><i><sup>1</sup>William H. Miller III Department of Physics & Astronomy, Johns Hopkins University, 3400 N. Charles St., Baltimore, MD 21218, USA  
+<sup>2</sup>Department of Physics and Astronomy, University of British Columbia, Vancouver, BC V6T 1Z1, Canada  
+<sup>3</sup>Raymond and Beverly Sackler School of Physics and Astronomy, Tel Aviv University, Tel-Aviv 69978, Israel</i></sub>
+
+</div>
+
+<div align="justify">
+&nbsp;&nbsp;&nbsp;&nbsp;We discuss a modification of a recently developed numerical scheme for evolving spherically symmetric self-gravitating systems to include the effects of self-interacting dark matter. The approach is far more efficient than traditional N-body simulations and cross sections with different dependencies on velocity and scattering-angle are easily accommodated. To demonstrate, we provide results of a simulation, which runs quickly on a personal computer, that shows the expected initial flattening of the inner region of an NFW halo as well as the later gravothermal collapse instability that leads to a dense core at the galactic center. We note that this approach can also be used, with some augmentation, to simulate the dynamics in globular clusters by modeling gravitational hard scattering as a self-interaction.
+</div>
+
+---
+
+## Key Results from SIDM Simulations
+
+<sub>Explore these results online in our [interactive notebooks](https://nsphere-sidm.github.io/NSphere-SIDM/examples/index.html).</sub>
+
+<table>
+<tr>
+<td width="50%"><img src="img/Phase_Space_Animation_SIDM.gif" alt="SIDM Phase Space Evolution" style="width:100%;"></td>
+<td width="50%"><img src="img/Phase_Space_Animation_SIDM_Core.gif" alt="SIDM Core Collapse" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>SIDM Phase Space Evolution:</b> Animation showing the complete 19.6 Gyr evolution of the phase space (r, v<sub>r</sub>) distribution for 10<sup>5</sup> particles with σ/m = 50 cm²/g. The system begins with an NFW profile and evolves under both gravity and SIDM scattering. Core formation becomes evident after ~15 Gyr, followed by rapid collapse.</sup></sub></td>
+<td align="justify"><sub><sup><b>Collapse of Core Region:</b> Zoomed view of the central 0.5 kpc during the critical gravothermal collapse period from 12.4 Gyr to 16.4 Gyr. The phase space shows dramatic heating and concentration of particles as the core density rises exponentially. Color scale emphasizes high-density regions using power-law normalization.</sup></sub></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%"><img src="img/Number_Distribution_Evolution_SIDM.gif" alt="Number Distribution Evolution" style="width:100%;"></td>
+<td width="50%"><img src="img/Fig2_Particle_Count_Evolution.png" alt="Particle Count" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>Particle Distribution Evolution:</b> Animation of N(r) showing particles per radial bin over 19.6 Gyr. The initial NFW cusp at r < 0.1 kpc flattens within 1 Gyr due to SIDM heat transfer. After ~15 Gyr, particles accumulate rapidly in the center as gravothermal collapse begins, forming a sharp density spike.</sup></sub></td>
+<td align="justify"><sub><sup><b>Core Particle Accumulation:</b> Time evolution of the number of particles in the innermost 0.02 kpc (blue) and 0.2 kpc (green). The number within 0.02 kpc is scaled up by 15. The number of particles quickly decreases from its initial value then slowly increases until about t=16 Gyr, with a sharper increase in the innermost regions. The decrease after 16.5 Gyr is a numerical artifact from finite time resolution.</sup></sub></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%"><img src="img/Fig1_Density_Evolution.png" alt="Density Evolution" style="width:100%;"></td>
+<td width="50%"><img src="img/Fig3_Radial_Velocity_Dispersion.png" alt="Velocity Dispersion" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>Density Profile Evolution:</b> Time evolution of the inner density profile for a 1.15×10<sup>9</sup> M<sub>⊙</sub> NFW halo with scale radius r<sub>s</sub>=1.18 kpc and SIDM cross section 50 cm²/g. The initial profile (black) has an r<sup>-1</sup> power law at r≲1 kpc, which flattens by t=1 Gyr (red). Steepening from gravothermal instability appears at t≈15 Gyr (green), with further steepening at t=16.5 Gyr (blue).</sup></sub></td>
+<td align="justify"><sub><sup><b>Velocity Dispersion Evolution:</b> Time evolution of the radial velocity dispersion in the inner 0.2 kpc. In the first Gyr the initially cold population in the NFW profile is rapidly heated towards isothermality, and the dispersion then diverges as the core forms 16 Gyr later. The sharp rise after 15 Gyr indicates the onset of core collapse.</sup></sub></td>
+</tr>
+</table>
 
 ---
 
 ## Quick Navigation
+- [Key Results from SIDM Simulations](#key-results-from-sidm-simulations)
 - [Overview](#overview)
 - [Numerical Implementation](#numerical-implementation)
 - [Core Components & Usage](#core-components--usage)
@@ -43,23 +110,25 @@ NSphere simulates the evolution of spherical self-gravitating systems, primarily
 
 ## Numerical Implementation
 
-The simulation evolves a system of 𝑁 particles, often representing concentric mass shells. The algorithm proceeds in discrete time steps. At each step:
+**Gravity:** The simulation evolves a system of 𝑁 particles, often representing concentric mass shells. The algorithm proceeds in discrete time steps. At each step:
 1.  **Sorting:** Particles are efficiently sorted by their radial coordinate `r`. This allows for rapid calculation of the mass enclosed within any radius, `M(r)`, which determines the gravitational force. The implementation utilizes optimized sorting algorithms like Quadsort, achieving nearly `𝑁 log 𝑁` or even linear scaling for the nearly-ordered data typical between steps.
 2.  **Force Calculation:** The gravitational force on each particle is calculated based solely on the mass `M(r)` enclosed within its current radius (Newton's Shell Theorem). Centrifugal force due to angular momentum (`ℓ²/r³`) is added.
 3.  **Integration:** Particle states (radius `r` and radial velocity `𝑣ᵣ`) are updated using a numerical integrator. NSphere employs adaptive leapfrog methods, automatically refining the time step for accuracy. For orbits with very low angular momentum approaching the center (`r` -> 0), where standard integration becomes stiff, a Levi-Civita coordinate transformation (`ϱ = √(r)`) and fictitious time (`dτ = dt/r`) are used to regularize the equations of motion and improved stability and accuracy.
 
 This approach significantly reduces computational cost compared to traditional `𝑁²` 𝑁-body methods and mitigates issues like two-body relaxation effects, making it suitable for high-precision studies of spherical systems on standard hardware.
 
-*(For more technical details, see the full [Online Documentation](https://kris-sigurdson.github.io/NSphere/))* <!-- Replace <hosted_docs_url> -->
+*(For more technical details, see the full [Online Documentation](https://nsphere-sidm.github.io/NSphere-SIDM/))*
+
+**Self Interactions:** NSphere-SIDM augments the gravitational evolution with self-interactions via direct Monte Carlo of particle scatterings. At each time step, particles within local phase-space neighborhoods scatter stochastically based on their relative velocities and a user-specified cross-section (σ/m). Pairs scatter in their center-of-mass frame with momentum conserved and randomized directions. The implementation supports parallel execution allowing efficient simulation of SIDM physics including core formation and gravothermal collapse, as detailed in Kamionkowski, Sigurdson & Slone (2025), [arXiv:2506.04334](https://arxiv.org/abs/2506.04334).
 
 ## Core Components & Usage
 
 The primary components intended for user interaction reside in the project root directory:
 
 *   `./nsphere`: The compiled C executable. This is the core simulation engine that reads parameters and initial conditions, runs the N-body evolution according to the chosen physics and numerical method, and outputs simulation data (snapshots, profiles) to the `data/` directory.
-    *   See the [C API Documentation](https://kris-sigurdson.github.io/NSphere/c_api/index.html) for details (primarily for developers). <!-- Replace <hosted_docs_url> -->
+    *   See the [C API Documentation](https://nsphere-sidm.github.io/NSphere-SIDM/c_api/index.html) for details (primarily for developers).
 *   `./nsphere_plot`: The main Python executable script for visualization and analysis. It reads output files from the `data/` directory and generates various plots (density profiles, mass profiles, energy conservation checks, trajectories, phase space diagrams) and animations, saving them to the `results/` directory.
-    *   See the [Python API Documentation](https://kris-sigurdson.github.io/NSphere/python_api/index.html) for details on its functions (for users and developers wanting to use the plotting library). <!-- Replace <hosted_docs_url> -->
+    *   See the [Python API Documentation](https://nsphere-sidm.github.io/NSphere-SIDM/python_api/index.html) for details on its functions (for users and developers wanting to use the plotting library).
 
 **Command-Line Help:** Both `./nsphere` and `./nsphere_plot` support the `--help` flag to display available command-line options and usage instructions.
 
@@ -67,22 +136,22 @@ The primary components intended for user interaction reside in the project root 
 *   `./nsphere_animations`: Generates standard profile and phase-space animations.
 *   `./nsphere_distributions`: Creates histograms comparing initial and final 1D distributions (radius, velocity, etc.).
 *   `./nsphere_2d_histograms`: Generates initial and final 2D phase-space histograms.
-*   See the [Command-Line Usage Guide](https://kris-sigurdson.github.io/NSphere/usage/command_line.html) for details on these wrappers. <!-- Replace <hosted_docs_url> -->
+*   See the [Command-Line Usage Guide](https://nsphere-sidm.github.io/NSphere-SIDM/command_line/index.html) for details on these wrappers.
 
 ## Installation
 
 Follow these steps to obtain the code, install dependencies, and compile NSphere.
 
 **1. Clone the Repository:**
-   First, clone the NSphere repository from GitHub using HTTPS:
+   First, clone the NSphere-SIDM repository from GitHub using HTTPS:
    ```bash
-   git clone https://github.com/kris-sigurdson/NSphere.git
+   git clone https://github.com/NSphere-SIDM/NSphere-SIDM.git
    ```
    Then, navigate into the newly created project directory:
    ```bash
-   cd NSphere
+   cd NSphere-SIDM
    ```
-   All subsequent commands should be run from within this `NSphere` directory.
+   All subsequent commands should be run from within this `NSphere-SIDM` directory.
 
 **2. Install System Dependencies:**
    NSphere requires several system dependencies: core C libraries (GSL, FFTW3, OpenMP), Python 3 (with pip and venv), and standard build tools (Make, our suggested C compiler Clang). An automated script is provided to attempt installation on common systems.
@@ -219,11 +288,13 @@ deactivate
 
 ## Examples
 
-A Jupyter Notebook example demonstrating how to load and visualize simulation output is available:
+Two Jupyter Notebook examples demonstrate how to load and visualize simulation output:
 
-*   **`examples/nsphere_notebook_example1.ipynb`**: Shows how to create phase-space and density profile animations from the `.dat` files generated by `./nsphere`. This provides a starting point for custom analysis and visualization using Python and demonstrates how to read NSphere binary data formats. See the notebook itself for prerequisites and usage instructions.
+*   **[Example 1](https://nsphere-sidm.github.io/NSphere-SIDM/examples/notebooks/nsphere_notebook_example1.html): `examples/nsphere_notebook_example1.ipynb`**: Shows how to create phase-space and density profile animations from the `.dat` files generated by `./nsphere`. This provides a starting point for custom analysis and visualization using Python and demonstrates how to read NSphere binary data formats. See the notebook itself for prerequisites and usage instructions.
 
-You can explore this notebook using Jupyter Lab or Jupyter Notebook after activating the Python environment (`source ./activate_nsphere` from the project root) and navigating to the `examples/` directory.
+*   **[Example 2](https://nsphere-sidm.github.io/NSphere-SIDM/examples/notebooks/nsphere_notebook_example2.html): `examples/nsphere_notebook_example2.ipynb`**: Advanced SIDM analysis notebook that reproduces the figures from the [SIDM paper](https://arxiv.org/abs/2506.04334). This notebook demonstrates phase-space evolution animations with power-law color scaling, core region analysis focusing on gravitational collapse (12.4-16.4 Gyr), density profile evolution showing core formation, particle count and velocity dispersion tracking in inner regions, and plot generation.
+
+You can explore these notebooks using Jupyter Lab or Jupyter Notebook after activating the Python environment (`source ./activate_nsphere` from the project root), navigating to the `examples/` directory, and launching `jupyter notebook` or `jupyter lab`.
 
 ## Data and Results Flow
 
@@ -237,14 +308,19 @@ The NSphere workflow typically involves simulation followed by analysis:
 
 For Methods, Science, and Algorithms please cite:
 
-**Paper Citation:**
+**Paper Citations:**
 
 *   Kamionkowski, M. & Sigurdson, K. (2025).
     "Evolution of self-gravitating spherical dark-matter halos with and without new physics.",
     arXiv preprint arXiv:2504.13996 [astro-ph.GA]. \
     [https://arxiv.org/abs/2504.13996](https://arxiv.org/abs/2504.13996)
 
-*BibTeX for Paper:*
+*   Kamionkowski, M., Sigurdson, K., & Slone, O. (2025).
+    "Numerical evolution of self-gravitating halos of self-interacting dark matter.",
+    arXiv preprint arXiv:2506.04334 [astro-ph.GA]. \
+    [https://arxiv.org/abs/2506.04334](https://arxiv.org/abs/2506.04334)
+
+*BibTeX for Papers:*
 ````bibtex
 @article{KamionkowskiSigurdson2025,
   author       = {Kamionkowski, Marc and Sigurdson, Kris},
@@ -256,24 +332,35 @@ For Methods, Science, and Algorithms please cite:
   primaryClass = {astro-ph.GA},
   url          = {https://arxiv.org/abs/2504.13996}
 }
+
+@article{KamionkowskiSigurdsonSlone2025,
+  author       = {Kamionkowski, Marc and Sigurdson, Kris and Slone, Oren},
+  title        = {Numerical evolution of self-gravitating halos of self-interacting dark matter},
+  journal      = {arXiv e-prints},
+  year         = {2025},
+  eprint       = {2506.04334},
+  archivePrefix= {arXiv},
+  primaryClass = {astro-ph.CO},
+  url          = {https://arxiv.org/abs/2506.04334}
+}
 ````
 
 ---
 If you wish to reference a specific software version please cite:
 
-**Software Citation (v0.1.2):**
+**Software Citation (v0.1.6):**
 
-*   Sigurdson, K., & Kamionkowski, M. (2025). *NSphere: Spherical N-body Simulation Code* (Version 0.1.2) [Software]. GitHub. https://github.com/kris-sigurdson/NSphere
+*   Sigurdson, K., & Kamionkowski, M. (2025). *NSphere-SIDM: Spherical N-body Simulation Code for Self-Interacting Dark Matter* (Version 0.1.6) [Software]. GitHub. https://github.com/NSphere-SIDM/NSphere-SIDM
 
 *BibTeX for Software:*
 ````bibtex
-@software{SigurdsonKamionkowski2025NSphereSoftware,
+@software{SigurdsonKamionkowski2025NSphereSIDM,
   author       = {Sigurdson, Kris and Kamionkowski, Marc},
-  title        = {{NSphere: Spherical N-body Simulation Code}},
-  version      = {0.1.2},
+  title        = {{NSphere-SIDM: Spherical N-body Simulation Code for Self-Interacting Dark Matter}},
+  version      = {0.1.6},
   year         = {2025},
   publisher    = {GitHub},
-  url          = {https://github.com/kris-sigurdson/NSphere}
+  url          = {https://github.com/NSphere-SIDM/NSphere-SIDM}
 }
 ````
 
