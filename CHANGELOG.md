@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2025-10-28
+
+This major release introduces constant-β and Osipkov-Merritt anisotropy models for all density profiles, overhauls the simulation restart/extend system, and adds memory-optimized I/O with trajectory and double-precision snapshot buffers. It also includes a fix for the parallel SIDM implementation and standardizes all code and user documentation.
+
+### Added
+
+*   **Anisotropy and Profile Models:**
+    *   Added constant-β anisotropy support for all profiles (analytical for Hernquist with hypergeometric functions for β ∈ [-1, 0.5]; numerical for NFW and Cored).
+    *   Added the Osipkov-Merritt (OM) model for radially-varying velocity anisotropy β(r) = r²/(r² + r_a²) for all three density profiles.
+    *   Added automatic detection and handling of negative f(E) or f(Q) values during initial conditions generation.
+
+*   **Simulation Infrastructure:**
+    *   Implemented a fixed-size circular buffer architecture for trajectory tracking that reduces memory usage and increases I/O speed. This is configurable via `--snapshot-buffer`.
+    *   Implemented a 4-snapshot rolling buffer storing float64 data for high-precision analysis, which is integrated with the restart/extend system and is backward compatible.
+    *   Added a framework for tracking total kinetic energy, potential energy, and energy conservation, with output to `total_energy_vs_time.dat`.
+
+*   **User Interface and Tooling:**
+    *   Added infrastructure for Jupyter Notebooks, including automatic notebook signing on environment activation and a new example notebook that reproduces all 7 figures from the velocity-anisotropy paper.
+    *   Added 10 new options for anisotropy, restart/extend, and particle selection. All 37 options are now documented.
+
+### Changed
+
+*   **Physics and Numerics:**
+    *   The default behavior now selects particles with the lowest true angular momentum values. The previous "closest to target" behavior is preserved via the `--lvals-target` flag.
+    *   Particle arrays now have 6 components to persistently store randomized phi angles.
+    *   A minimum critical radius is now enforced to ensure the Levi-Civita integrator is used at very small radii independent of the angular momentum value for numerical stability.
+
+*   **Performance:**
+    *   The sorting system now may adaptively select the fastest algorithm (insertion, quadsort, or radix sort) at runtime based on performance benchmarks.
+
+*   **Code Quality:**
+    *   Overhauled all Doxygen comments to a standardized format. All informal language, first-person pronouns, and meta-tags have been removed, and mathematical notation now uses LaTeX.
+
+### Fixed
+
+*   **Simulation Workflow:**
+    *   Fixed a series of bugs in the restart/extend system that caused trajectory corruption and timing errors, achieving bit-for-bit reproducibility.
+    *   Corrected the restart/extend logic to ensure all 7 auxiliary file types and the double-precision snapshot buffers are now properly handled for complete state transfer.
+
+*   **Physics and Numerics:**
+    *   Corrected a bug in the parallel implementation that caused some scatter events to overwrite the final state from prior scattering in the same timestep by implementing a graph coloring algorithm.
+    *   Replaced an additive method with a multiplicative one for spline monotonicity enforcement, correcting errors in potential calculations.
+    *   Corrected the core `dt` calculation from `tfinal/Ntimes` to `tfinal/(Ntimes-1)` to ensure consistent time alignment.
+    *   Fixed a bug in the sign reconstruction for the `--lvals-target` feature, which previously only worked correctly when the target L was 0.
+
+*   **Reproducibility:**
+    *   Corrected an issue where simulations could use a seed of 0; now ensures unique seed generation by using system time including microseconds.
+
+*   **Documentation:**
+    *   Resolved multiple issues that broke Doxygen/Sphinx builds, including incorrect parsing of `__attribute__`, parameter name mismatches, and invalid fields in example notebooks.
+
+### Removed
+
+*   **Code Quality:**
+    *   Converted all NumPy-style docstrings to standard Doxygen and removed duplicate documentation from forward declarations, reducing code size by over 300 lines.
+
+---
+
 ## [0.1.6] - 2025-06-05
 
 This release transforms NSphere from a purely gravitational spherical N-body simulator to implement Self-Interacting Dark Matter (SIDM) physics, dual density profile support, enhanced visualization capabilities, and updated documentation.

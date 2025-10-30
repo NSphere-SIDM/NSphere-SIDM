@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Examples" href="../examples/index.html" />
-    <link rel="prev" title="C API Reference" href="../c_api/index.html" /> 
+    <link rel="prev" title="QuadSort (quadsort.c / quadsort.h)" href="../c_api/quadsort.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,6 +47,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../command_line/index.html">Command-Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../data_flow/index.html">Data and Results Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_flow/index.html#output-file-reference">Output File Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../c_api/index.html">C API Reference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Python API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#nsphere-plot-nsphere-plot-py">NSphere Plot (<cite>nsphere_plot.py</cite>)</a><ul>
@@ -108,6 +109,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#nsphere_plot.plot_psi"><code class="docutils literal notranslate"><span class="pre">plot_psi()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nsphere_plot.plot_single_trajectory"><code class="docutils literal notranslate"><span class="pre">plot_single_trajectory()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nsphere_plot.plot_tangential_velocity_histogram"><code class="docutils literal notranslate"><span class="pre">plot_tangential_velocity_histogram()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nsphere_plot.plot_total_energy_diagnostics"><code class="docutils literal notranslate"><span class="pre">plot_total_energy_diagnostics()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nsphere_plot.plot_trajectories"><code class="docutils literal notranslate"><span class="pre">plot_trajectories()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nsphere_plot.preprocess_phase_space_file"><code class="docutils literal notranslate"><span class="pre">preprocess_phase_space_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nsphere_plot.print_footer"><code class="docutils literal notranslate"><span class="pre">print_footer()</span></code></a></li>
@@ -245,21 +247,8 @@ visualization types and skip all others, regardless of --no-* flags.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="nsphere_plot.Configuration.setup_file_paths">
 <span class="sig-name descname"><span class="pre">setup_file_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#Configuration.setup_file_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.Configuration.setup_file_paths" title="Link to this definition"></a></dt>
-<dd><p>Generate a dictionary mapping file types to their full file paths.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dictionary where keys are file type identifiers (e.g., &quot;particles&quot;,
-&quot;density_profile&quot;) and values are the corresponding file paths with
-the configured suffix.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>This method constructs paths for all possible data files that might be
-used in the visualization process. The actual existence of these files
-is checked later when they are accessed.</p>
+<dd><p>Generate a dictionary mapping file types to their full file paths.
+All filenames now correctly include the suffix.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1043,7 +1032,7 @@ remained stable and which parts changed during the simulation.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.plot_density">
-<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'density_profile.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_density" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_density" title="Link to this definition"></a></dt>
 <dd><p>Plot density profile as a function of radius and save to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1196,14 +1185,15 @@ Uses log-log scale for better visualization.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.plot_lowestL_trajectories_3panel">
-<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_lowestL_trajectories_3panel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lowest_l_trajectories.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lowestl_3panel.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_lowestL_trajectories_3panel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_lowestL_trajectories_3panel" title="Link to this definition"></a></dt>
-<dd><p>Create a 3-panel plot showing trajectories of particles with lowest angular momentum.</p>
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_lowestL_trajectories_3panel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lowest_l_trajectories.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lowestl_3panel.png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lowestl'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_lowestL_trajectories_3panel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_lowestL_trajectories_3panel" title="Link to this definition"></a></dt>
+<dd><p>Create a 3-panel plot showing trajectories of selected particles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input_file</strong> (<em>str</em><em>, </em><em>optional</em>) -- Path to the input data file containing trajectory data.
 Default is &quot;lowest_l_trajectories.dat&quot;.</p></li>
 <li><p><strong>output_file</strong> (<em>str</em><em>, </em><em>optional</em>) -- Path to save the output plot. Default is &quot;lowestl_3panel.png&quot;.</p></li>
+<li><p><strong>file_prefix</strong> (<em>str</em><em>, </em><em>optional</em>) -- Prefix to use for labeling (&quot;lowestl&quot; or &quot;chosenl&quot;).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1217,11 +1207,14 @@ time  r1  E1  L1   r2  E2  L2   ...   rN  EN  LN</p>
 1) Radii vs. time for each particle
 2) Energies vs. time for each particle
 3) Percentage deviation from average energy vs. time for each particle</p>
+<p>Label changes based on file type:
+- &quot;Lowest&quot; for lowest_l files
+- &quot;Chosen&quot; for chosen_l files</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.plot_mass_enclosed">
-<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_mass_enclosed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mass_enclosed.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_mass_enclosed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_mass_enclosed" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_mass_enclosed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_mass_enclosed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_mass_enclosed" title="Link to this definition"></a></dt>
 <dd><p>Plot enclosed mass as a function of radius and save to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1290,7 +1283,7 @@ with the output file path as argument.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="nsphere_plot.plot_psi">
-<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'psi_profile.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_psi" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_psi" title="Link to this definition"></a></dt>
 <dd><p>Plot gravitational potential (Psi) as a function of radius and save to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1353,6 +1346,29 @@ with appropriate labels and grid. Assumes psi_values are already scaled.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nsphere_plot.plot_total_energy_diagnostics">
+<span class="sig-prename descclassname"><span class="pre">nsphere_plot.</span></span><span class="sig-name descname"><span class="pre">plot_total_energy_diagnostics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'results/total_energy_diagnostics.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nsphere_plot.html#plot_total_energy_diagnostics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nsphere_plot.plot_total_energy_diagnostics" title="Link to this definition"></a></dt>
+<dd><p>Create a three-panel diagnostic plot for total system energy conservation.</p>
+<p>Panel 1: Absolute values of KE, PE, and Total Energy vs time
+Panel 2: Percent change from initial values for all three quantities (auto-scaled)
+Panel 3: Percent change of total energy only (zoomed in for detail)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) -- Path to the total_energy_vs_time binary file from nsphere</p></li>
+<li><p><strong>output_file</strong> (<em>str</em>) -- Path to save the output plot (PNG format)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the saved plot file, or None if plotting failed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1694,15 +1710,13 @@ so it does not require robust ranging modifications.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) -- Path to the lastparams.dat file. Default is &quot;data/lastparams.dat&quot;.</p></li>
-<li><p><strong>return_suffix</strong> (<em>bool</em><em>, </em><em>optional</em>) -- If True, return a suffix string. If False, return individual parameters.
-Default is True.</p></li>
-<li><p><strong>user_suffix</strong> (<em>str</em><em>, </em><em>optional</em>) -- If provided, look for lastparams_user_suffix.dat instead of lastparams.dat.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) -- Base path to the lastparams.dat file.</p></li>
+<li><p><strong>return_suffix</strong> (<em>bool</em><em>, </em><em>optional</em>) -- If True, return a suffix string. If False, return individual parameters.</p></li>
+<li><p><strong>user_suffix</strong> (<em>str</em><em>, </em><em>optional</em>) -- If provided, look for lastparams&lt;user_suffix&gt;.dat instead of lastparams.dat.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>If return_suffix is True, returns a string like &quot;_[filetag]_npts_Ntimes_tfinal_factor&quot;
-or just &quot;_npts_Ntimes_tfinal_factor&quot; if no file tag is present.
+<dd class="field-even"><p>If return_suffix is True, returns a string like &quot;_[filetag]_npts_Ntimes_tfinal_factor&quot;.
 If return_suffix is False, returns a tuple of (npts, Ntimes, tfinal_factor, file_tag).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -2180,7 +2194,7 @@ until stop_timer is set.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../c_api/index.html" class="btn btn-neutral float-left" title="C API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../c_api/quadsort.html" class="btn btn-neutral float-left" title="QuadSort (quadsort.c / quadsort.h)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../examples/index.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -6,10 +6,10 @@ authors: # Software authors
     given-names: Kris
   - family-names: Kamionkowski
     given-names: Marc
-version: "0.1.6"
+version: "0.1.7"
 license: "Apache-2.0"
 repository: "https://github.com/NSphere-SIDM/NSphere-SIDM"
-date-released: 2025-06-05
+date-released: 2025-10-28
 preferred-citation:
   type: article
   title: "Numerical evolution of self-gravitating halos of self-interacting dark matter"
@@ -33,3 +33,12 @@ references:
       given-names: Kris
     year: 2025
     url: "https://arxiv.org/abs/2504.13996"
+  - type: article
+    title: "Gravothermal collapse of self-interacting dark-matter halos with anisotropic velocity distributions"
+    authors:
+    - family-names: Kamionkowski
+      given-names: Marc
+    - family-names: Sigurdson
+      given-names: Kris
+    year: 2025
+    url: "https://arxiv.org/abs/2510.23705"

@@ -52,6 +52,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#initial-conditions-i-o">Initial Conditions &amp; I/O</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#numerical-methods">Numerical Methods</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#halo-profile-configuration">Halo Profile Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#anisotropy-models">Anisotropy Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sidm-physics">SIDM Physics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#last-parameters-file-lastparams-dat">Last Parameters File (<cite>lastparams.dat</cite>)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#last-seed-files-last-initial-seed-dat-last-sidm-seed-dat">Last Seed Files (<cite>last_initial_seed.dat</cite>, <cite>last_sidm_seed.dat</cite>)</a></li>
@@ -64,6 +65,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../data_flow/index.html">Data and Results Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_flow/index.html#output-file-reference">Output File Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../c_api/index.html">C API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../python_api/index.html">Python API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
@@ -160,11 +162,51 @@ if conflicting levels are given, the one enabling the most output takes effect.
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-nsphere-restart">
-<span class="sig-name descname"><span class="pre">--restart</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-nsphere-restart" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">--restart</span></span><span class="sig-prename descclassname"> <span class="pre">[force]</span></span><a class="headerlink" href="#cmdoption-nsphere-restart" title="Link to this definition"></a></dt>
 <dd><p>Enable restart mode. Looks for existing output data products (primarily
 <code class="docutils literal notranslate"><span class="pre">all_particle_data&lt;suffix&gt;.dat</span></code> and snapshot files) to determine where
 to resume processing. If complete data is found for the simulation phase,
-it may be skipped entirely. Incompatible with <code class="docutils literal notranslate"><span class="pre">--readinit</span></code> and <code class="docutils literal notranslate"><span class="pre">--writeinit</span></code>.
+it may be skipped entirely.</p>
+<p>With 'force': regenerate ALL snapshots even if they exist.</p>
+<p>Incompatible with <code class="docutils literal notranslate"><span class="pre">--readinit</span></code> and <code class="docutils literal notranslate"><span class="pre">--writeinit</span></code>.
+[Default: Off]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-sim-restart">
+<span class="sig-name descname"><span class="pre">--sim-restart</span></span><span class="sig-prename descclassname"> <span class="pre">[check]</span></span><a class="headerlink" href="#cmdoption-nsphere-sim-restart" title="Link to this definition"></a></dt>
+<dd><p>Restart incomplete simulation from last checkpoint.
+Checks for incomplete <code class="docutils literal notranslate"><span class="pre">all_particle_data</span></code> files and continues from
+the last complete snapshot. Creates backups and truncates files to
+ensure consistency.</p>
+<p>With 'check': only report status without restarting.</p>
+<p>[Default: Off]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-restart-file">
+<span class="sig-name descname"><span class="pre">--restart-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;file&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-restart-file" title="Link to this definition"></a></dt>
+<dd><p>Specify explicit file path for restart operations (debugging).
+Overrides automatic file detection.
+[Default: Off]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-sim-extend">
+<span class="sig-name descname"><span class="pre">--sim-extend</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-nsphere-sim-extend" title="Link to this definition"></a></dt>
+<dd><p>Extend a completed simulation to new Ntimes/tfinal values.
+Copies source file and continues evolution. Maintains constant
+physical timestep dt and write frequency dtwrite.</p>
+<p>Requires <code class="docutils literal notranslate"><span class="pre">--extend-file</span></code> to specify source file.
+[Default: Off]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-extend-file">
+<span class="sig-name descname"><span class="pre">--extend-file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;file&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-extend-file" title="Link to this definition"></a></dt>
+<dd><p>Source <code class="docutils literal notranslate"><span class="pre">all_particle_data</span></code> file to extend (used with <code class="docutils literal notranslate"><span class="pre">--sim-extend</span></code>).
+File will be copied to new name based on target parameters.
+Filename must follow NSphere format: <code class="docutils literal notranslate"><span class="pre">prefix_N_Ntimes_tfinal.dat</span></code>
 [Default: Off]</p>
 </dd></dl>
 
@@ -203,11 +245,28 @@ snapshots, including t=0).
 </dd></dl>
 
 <dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-snapshot-buffer">
+<span class="sig-name descname"><span class="pre">--snapshot-buffer</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-snapshot-buffer" title="Link to this definition"></a></dt>
+<dd><p>Number of snapshots to buffer in memory before writing to disk.
+Controls memory usage vs I/O frequency tradeoff.
+[Default: 100]</p>
+</dd></dl>
+
+<dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-nsphere-tfinal">
 <span class="sig-name descname"><span class="pre">--tfinal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-tfinal" title="Link to this definition"></a></dt>
 <dd><p>Sets the total simulation duration as a multiple of the characteristic
 dynamical time (tdyn). Duration = <code class="docutils literal notranslate"><span class="pre">&lt;int&gt;</span></code> * tdyn.
 [Default: 5]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-lvals-target">
+<span class="sig-name descname"><span class="pre">--lvals-target</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-lvals-target" title="Link to this definition"></a></dt>
+<dd><p>Select particles with angular momentum values closest to the specified target,
+rather than selecting the lowest L particles (default behavior).
+Useful for studying specific orbital families.
+[Default: Off - selects lowest L particles]</p>
 </dd></dl>
 
 <dl class="std option">
@@ -310,13 +369,17 @@ in the output filename suffix, in addition to the parameters.
 <span class="sig-name descname"><span class="pre">--sort</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-sort" title="Link to this definition"></a></dt>
 <dd><p>Selects the particle sorting algorithm. [Default: 1]</p>
 <dl class="simple">
-<dt>1</dt><dd><p>: Selects Parallel Quadsort (Default).</p>
+<dt>1</dt><dd><p>: Parallel Quadsort (Default).</p>
 </dd>
-<dt>2</dt><dd><p>: Selects Sequential Quadsort.</p>
+<dt>2</dt><dd><p>: Sequential Quadsort.</p>
 </dd>
-<dt>3</dt><dd><p>: Selects Parallel Insertion Sort.</p>
+<dt>3</dt><dd><p>: Parallel Insertion Sort.</p>
 </dd>
-<dt>4</dt><dd><p>: Selects Sequential Insertion Sort.</p>
+<dt>4</dt><dd><p>: Sequential Insertion Sort.</p>
+</dd>
+<dt>5</dt><dd><p>: Parallel Radix Sort - High performance for large arrays.</p>
+</dd>
+<dt>6</dt><dd><p>: Adaptive sort - Benchmarks algorithms every 1000 sorts and switches to fastest.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -339,6 +402,7 @@ the overall mass normalization of the initial conditions.
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">nfw</span></code>: NFW profile with exponential cutoff</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cored</span></code>: Cored Plummer-like profile</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hernquist</span></code>: Hernquist profile (supports constant-β and OM anisotropy)</p></li>
 </ul>
 <p>[Default: nfw]</p>
 </dd></dl>
@@ -347,8 +411,9 @@ the overall mass normalization of the initial conditions.
 <dt class="sig sig-object std" id="cmdoption-nsphere-scale-radius">
 <span class="sig-name descname"><span class="pre">--scale-radius</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-scale-radius" title="Link to this definition"></a></dt>
 <dd><p>Scale radius in kpc for the selected profile. For NFW profiles this is
-the traditional scale radius rs; for cored profiles this is the core radius.
-[Default: 1.18]</p>
+the traditional scale radius rs; for cored profiles this is the core radius;
+for Hernquist profiles this is the scale radius a.
+[Default: 23]</p>
 </dd></dl>
 
 <dl class="std option">
@@ -368,15 +433,57 @@ exponential cutoff at large radii. Only used for NFW profiles.
 </dd></dl>
 
 </section>
+<section id="anisotropy-models">
+<h3>Anisotropy Models<a class="headerlink" href="#anisotropy-models" title="Link to this heading"></a></h3>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-aniso-beta">
+<span class="sig-name descname"><span class="pre">--aniso-beta</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-aniso-beta" title="Link to this definition"></a></dt>
+<dd><p>Constant anisotropy parameter β for Hernquist profile.
+Controls velocity anisotropy: β = 0 (isotropic), β &gt; 0 (radially biased),
+β &lt; 0 (tangentially biased).</p>
+<p>Valid range: -1 ≤ β ≤ 0.5</p>
+<p>Only compatible with <code class="docutils literal notranslate"><span class="pre">--profile</span> <span class="pre">hernquist</span></code>.
+Cannot be used with <code class="docutils literal notranslate"><span class="pre">--aniso-factor</span></code> or <code class="docutils literal notranslate"><span class="pre">--aniso-betascale</span></code>.
+[Default: 0.0]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-aniso-factor">
+<span class="sig-name descname"><span class="pre">--aniso-factor</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-aniso-factor" title="Link to this definition"></a></dt>
+<dd><p>Osipkov-Merritt anisotropy radius as multiple of scale radius.
+Sets r_a = factor × r_scale.</p>
+<p>Enables OM model with β(r) = r²/(r² + r_a²), which transitions from
+isotropic (β=0) at r=0 to radially biased (β→1) at large radii.</p>
+<p>Compatible with all profiles (NFW, Cored, Hernquist).
+Cannot be used with <code class="docutils literal notranslate"><span class="pre">--aniso-betascale</span></code>.
+[Default: Off]</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-aniso-betascale">
+<span class="sig-name descname"><span class="pre">--aniso-betascale</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;float&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-aniso-betascale" title="Link to this definition"></a></dt>
+<dd><p>Alternative to <code class="docutils literal notranslate"><span class="pre">--aniso-factor</span></code>: specify β at the scale radius directly.
+Calculates r_a/r_s = √(1/β_s - 1) automatically.</p>
+<p>Valid range: (0, 1)</p>
+<p>Cannot be used with <code class="docutils literal notranslate"><span class="pre">--aniso-factor</span></code>.
+[Default: Off]</p>
+</dd></dl>
+
+</section>
 <section id="sidm-physics">
 <h3>SIDM Physics<a class="headerlink" href="#sidm-physics" title="Link to this heading"></a></h3>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-nsphere-sidm">
 <span class="sig-name descname"><span class="pre">--sidm</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-nsphere-sidm" title="Link to this definition"></a></dt>
 <dd><p>Enable Self-Interacting Dark Matter (SIDM) scattering physics.
-Activates particle-particle scattering with velocity-dependent cross-section.
+Activates particle-particle scattering with cross-section controlled by <code class="docutils literal notranslate"><span class="pre">--sidm-kappa</span></code>.
 [Default: Off]</p>
-<p>Set seed specifically for SIDM scattering calculations.
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-nsphere-sidm-seed">
+<span class="sig-name descname"><span class="pre">--sidm-seed</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;int&gt;</span></span><a class="headerlink" href="#cmdoption-nsphere-sidm-seed" title="Link to this definition"></a></dt>
+<dd><p>Set seed specifically for SIDM scattering calculations.
 Highest priority - overrides both <code class="docutils literal notranslate"><span class="pre">--master-seed</span></code> and <code class="docutils literal notranslate"><span class="pre">--load-seeds</span></code>.
 [Default: derived from master seed, loaded from file, or time-based]</p>
 </dd></dl>

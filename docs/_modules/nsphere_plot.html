@@ -44,6 +44,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../command_line/index.html">Command-Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../data_flow/index.html">Data and Results Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_flow/index.html#output-file-reference">Output File Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../c_api/index.html">C API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../python_api/index.html">Python API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
@@ -1117,74 +1118,65 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    filename : str, optional</span>
-<span class="sd">        Path to the lastparams.dat file. Default is &quot;data/lastparams.dat&quot;.</span>
+<span class="sd">        Base path to the lastparams.dat file.</span>
 <span class="sd">    return_suffix : bool, optional</span>
 <span class="sd">        If True, return a suffix string. If False, return individual parameters.</span>
-<span class="sd">        Default is True.</span>
 <span class="sd">    user_suffix : str, optional</span>
-<span class="sd">        If provided, look for lastparams_user_suffix.dat instead of lastparams.dat.</span>
+<span class="sd">        If provided, look for lastparams&lt;user_suffix&gt;.dat instead of lastparams.dat.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    str or tuple</span>
-<span class="sd">        If return_suffix is True, returns a string like &quot;_[filetag]_npts_Ntimes_tfinal_factor&quot;</span>
-<span class="sd">        or just &quot;_npts_Ntimes_tfinal_factor&quot; if no file tag is present.</span>
+<span class="sd">        If return_suffix is True, returns a string like &quot;_[filetag]_npts_Ntimes_tfinal_factor&quot;.</span>
 <span class="sd">        If return_suffix is False, returns a tuple of (npts, Ntimes, tfinal_factor, file_tag).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">showing_help</span>
 
     <span class="n">default_suffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">default_params</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">1001</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>  <span class="c1"># Default values for (npts, Ntimes, tfinal_factor, file_tag)</span>
+    <span class="n">default_params</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">1001</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>  <span class="c1"># Default values</span>
 
-    <span class="c1"># If showing help, return default values without file operations</span>
     <span class="k">if</span> <span class="n">showing_help</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default_suffix</span> <span class="k">if</span> <span class="n">return_suffix</span> <span class="k">else</span> <span class="n">default_params</span>
 
-    <span class="c1"># Always use data/lastparams.dat unless a specific suffix was provided</span>
+    <span class="c1"># Determine which lastparams file to read</span>
     <span class="k">if</span> <span class="n">user_suffix</span><span class="p">:</span>
-        <span class="c1"># If user supplied a suffix, use lastparams_suffix.dat</span>
-        <span class="n">suffix_to_use</span> <span class="o">=</span> <span class="n">user_suffix</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>  <span class="c1"># Remove leading underscore if present</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/lastparams_</span><span class="si">{</span><span class="n">suffix_to_use</span><span class="si">}</span><span class="s2">.dat&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using user-specified suffix: </span><span class="si">{</span><span class="n">suffix_to_use</span><span class="si">}</span><span class="s2">, looking for file: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># If user supplied a suffix, use lastparams&lt;suffix&gt;.dat</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/lastparams</span><span class="si">{</span><span class="n">user_suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attempting to read parameters from user-specified file: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Otherwise use lastparams.dat</span>
+        <span class="c1"># Otherwise, use the default lastparams.dat which points to the latest run</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;data/lastparams.dat&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using default lastparams.dat file&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading parameters from default file: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">truncate_and_pad_string</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Could not find </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">, and no suffixed lastparams files were found.&quot;</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">truncate_and_pad_string</span><span class="p">(</span><span class="s2">&quot;Please run the simulation before plotting.&quot;</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">truncate_and_pad_string</span><span class="p">(</span><span class="s2">&quot;Alternatively, specify parameters using the --suffix command line argument.&quot;</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">truncate_and_pad_string</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Could not find parameter file: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">truncate_and_pad_string</span><span class="p">(</span><span class="s2">&quot;Please run the simulation or specify a valid --suffix.&quot;</span><span class="p">))</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">default_suffix</span> <span class="k">if</span> <span class="n">return_suffix</span> <span class="k">else</span> <span class="n">default_params</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_suffix</span> <span class="k">if</span> <span class="n">return_suffix</span> <span class="k">else</span> <span class="n">default_params</span>
 
-            <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">maxsplit</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># Split into at most 4 parts to handle file tag with spaces</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">default_suffix</span> <span class="k">if</span> <span class="n">return_suffix</span> <span class="k">else</span> <span class="n">default_params</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">maxsplit</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default_suffix</span> <span class="k">if</span> <span class="n">return_suffix</span> <span class="k">else</span> <span class="n">default_params</span>
 
-            <span class="n">npts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">Ntimes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">tfinal_factor</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">npts</span><span class="p">,</span> <span class="n">Ntimes</span><span class="p">,</span> <span class="n">tfinal_factor</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">parts</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">file_tag</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
 
-            <span class="c1"># Get file tag if available (might be empty)</span>
-            <span class="n">file_tag</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-
-            <span class="c1"># Log the file tag found in the file</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File tag from lastparams file: &#39;</span><span class="si">{</span><span class="n">file_tag</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read parameters: npts=</span><span class="si">{</span><span class="n">npts</span><span class="si">}</span><span class="s2">, Ntimes=</span><span class="si">{</span><span class="n">Ntimes</span><span class="si">}</span><span class="s2">, tfinal=</span><span class="si">{</span><span class="n">tfinal_factor</span><span class="si">}</span><span class="s2">, tag=&#39;</span><span class="si">{</span><span class="n">file_tag</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">return_suffix</span><span class="p">:</span>
-            <span class="c1"># Build suffix based on file tag</span>
+            <span class="c1"># Reconstruct the suffix from the read parameters</span>
             <span class="k">if</span> <span class="n">file_tag</span><span class="p">:</span>
                 <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">file_tag</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">npts</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">Ntimes</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">tfinal_factor</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">npts</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">Ntimes</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">tfinal_factor</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">npts</span><span class="p">,</span> <span class="n">Ntimes</span><span class="p">,</span> <span class="n">tfinal_factor</span><span class="p">,</span> <span class="n">file_tag</span><span class="p">)</span>
+
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">truncate_and_pad_string</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Error reading </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">default_suffix</span> <span class="k">if</span> <span class="n">return_suffix</span> <span class="k">else</span> <span class="n">default_params</span></div>
@@ -1882,13 +1874,16 @@
 <span class="sd">    that follow a pattern like &quot;Rank_Mass_Rad_VRad_sorted_t00012&quot;. Returns a large</span>
 <span class="sd">    value for non-matching files to ensure they sort after valid snapshot files.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">suffix</span>
     <span class="k">if</span> <span class="n">pattern</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_sorted_t(\d+)&#39;</span><span class="p">)</span>
+        <span class="c1"># Build a pattern that correctly handles the suffix</span>
+        <span class="n">pattern_str</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_sorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern_str</span><span class="p">)</span>
 
     <span class="n">match</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-    <span class="k">return</span> <span class="mi">999999999</span>  <span class="c1"># Default high value for non-matching files</span></div>
+    <span class="k">return</span> <span class="mi">999999999</span></div>
 
 
 <div class="viewcode-block" id="get_file_prefix">
@@ -2624,7 +2619,7 @@
 
 <div class="viewcode-block" id="plot_density">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.plot_density">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_density</span><span class="p">(</span><span class="n">r_values</span><span class="p">,</span> <span class="n">rho_values</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;density_profile.png&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_density</span><span class="p">(</span><span class="n">r_values</span><span class="p">,</span> <span class="n">rho_values</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot density profile as a function of radius and save to file.</span>
 
@@ -2664,6 +2659,8 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">output_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/density_profile</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.png&quot;</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
@@ -2672,6 +2669,8 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;No valid data for log-log plot&#39;</span><span class="p">,</span> 
                  <span class="n">transform</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Radial Density Profile $\rho(r)$ (Log-Log)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/density_profile</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.png&quot;</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
@@ -2682,7 +2681,7 @@
 
 <div class="viewcode-block" id="plot_mass_enclosed">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.plot_mass_enclosed">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_mass_enclosed</span><span class="p">(</span><span class="n">r_values</span><span class="p">,</span> <span class="n">mass_values</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;mass_enclosed.png&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_mass_enclosed</span><span class="p">(</span><span class="n">r_values</span><span class="p">,</span> <span class="n">mass_values</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot enclosed mass as a function of radius and save to file.</span>
 
@@ -2714,17 +2713,19 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">output_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/mass_enclosed</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.png&quot;</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    
+
     <span class="n">log_plot_saved</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output_file</span></div>
 
 
 <div class="viewcode-block" id="plot_psi">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.plot_psi">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_psi</span><span class="p">(</span><span class="n">r_values</span><span class="p">,</span> <span class="n">psi_values</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;psi_profile.png&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_psi</span><span class="p">(</span><span class="n">r_values</span><span class="p">,</span> <span class="n">psi_values</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot gravitational potential (Psi) as a function of radius and save to file.</span>
 
@@ -2758,6 +2759,8 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">output_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/psi_profile</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.png&quot;</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -2831,21 +2834,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">psi_values</span><span class="p">,</span> <span class="n">drho_dpsi</span> <span class="o">=</span> <span class="n">filter_finite_rows</span><span class="p">(</span><span class="n">psi_values</span><span class="p">,</span> <span class="n">drho_dpsi</span><span class="p">)</span>
-    
-    <span class="c1"># Plot negative of drho_dpsi on log scale</span>
-    <span class="n">neg_drho_dpsi</span> <span class="o">=</span> <span class="o">-</span><span class="n">drho_dpsi</span>
-    
+
     <span class="c1"># Filter for positive values only for log scale</span>
-    <span class="n">positive_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">psi_values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">neg_drho_dpsi</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">positive_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">psi_values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">drho_dpsi</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">positive_mask</span><span class="p">):</span>
         <span class="n">psi_pos</span> <span class="o">=</span> <span class="n">psi_values</span><span class="p">[</span><span class="n">positive_mask</span><span class="p">]</span>
-        <span class="n">neg_drho_dpsi_pos</span> <span class="o">=</span> <span class="n">neg_drho_dpsi</span><span class="p">[</span><span class="n">positive_mask</span><span class="p">]</span>
-        
+        <span class="n">drho_dpsi_pos</span> <span class="o">=</span> <span class="n">drho_dpsi</span><span class="p">[</span><span class="n">positive_mask</span><span class="p">]</span>
+
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">psi_pos</span><span class="p">,</span> <span class="n">neg_drho_dpsi_pos</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$-d\rho/d\Psi$&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">psi_pos</span><span class="p">,</span> <span class="n">drho_dpsi_pos</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$d\rho/d\Psi$&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\Psi$ (km$^2$/s$^2$)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$-d\rho/d\Psi$ ((M$_\odot$/kpc$^3$)/(km$^2$/s$^2$))&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Negative Density Derivative $-d\rho/d\Psi$ (Log-Log)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$d\rho/d\Psi$ ((M$_\odot$/kpc$^3$)/(km$^2$/s$^2$))&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Density Derivative $d\rho/d\Psi$ (Log-Log)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -2854,9 +2854,9 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Fallback to empty plot if no valid data</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;No valid data for log-log plot&#39;</span><span class="p">,</span> 
+        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;No valid data for log-log plot&#39;</span><span class="p">,</span>
                  <span class="n">transform</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Negative Density Derivative $-d\rho/d\Psi$ (Log-Log)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Density Derivative $d\rho/d\Psi$ (Log-Log)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -3427,9 +3427,9 @@
 
 <div class="viewcode-block" id="plot_lowestL_trajectories_3panel">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.plot_lowestL_trajectories_3panel">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_lowestL_trajectories_3panel</span><span class="p">(</span><span class="n">input_file</span><span class="o">=</span><span class="s2">&quot;lowest_l_trajectories.dat&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;lowestl_3panel.png&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_lowestL_trajectories_3panel</span><span class="p">(</span><span class="n">input_file</span><span class="o">=</span><span class="s2">&quot;lowest_l_trajectories.dat&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;lowestl_3panel.png&quot;</span><span class="p">,</span> <span class="n">file_prefix</span><span class="o">=</span><span class="s2">&quot;lowestl&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create a 3-panel plot showing trajectories of particles with lowest angular momentum.</span>
+<span class="sd">    Create a 3-panel plot showing trajectories of selected particles.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -3438,6 +3438,8 @@
 <span class="sd">        Default is &quot;lowest_l_trajectories.dat&quot;.</span>
 <span class="sd">    output_file : str, optional</span>
 <span class="sd">        Path to save the output plot. Default is &quot;lowestl_3panel.png&quot;.</span>
+<span class="sd">    file_prefix : str, optional</span>
+<span class="sd">        Prefix to use for labeling (&quot;lowestl&quot; or &quot;chosenl&quot;).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -3452,6 +3454,10 @@
 <span class="sd">    1) Radii vs. time for each particle</span>
 <span class="sd">    2) Energies vs. time for each particle</span>
 <span class="sd">    3) Percentage deviation from average energy vs. time for each particle</span>
+
+<span class="sd">    Label changes based on file type:</span>
+<span class="sd">    - &quot;Lowest&quot; for lowest_l files</span>
+<span class="sd">    - &quot;Chosen&quot; for chosen_l files</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Load the data</span>
@@ -3478,25 +3484,35 @@
     <span class="n">ax_e</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">ax_dev</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
+    <span class="c1"># Determine label text based on file prefix</span>
+    <span class="n">label_descriptor</span> <span class="o">=</span> <span class="s2">&quot;Chosen&quot;</span> <span class="k">if</span> <span class="n">file_prefix</span> <span class="o">==</span> <span class="s2">&quot;chosenl&quot;</span> <span class="k">else</span> <span class="s2">&quot;Lowest&quot;</span>
+
+    <span class="c1"># Extract initial L values from first timestep for legend</span>
+    <span class="n">initial_L_values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nlowest</span><span class="p">):</span>
+        <span class="n">L_col</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">p</span>  <span class="c1"># L is the third of each triplet</span>
+        <span class="n">initial_L</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">L_col</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="n">initial_L_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial_L</span><span class="p">)</span>
+
     <span class="c1"># 1) Radii vs. time</span>
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nlowest</span><span class="p">):</span>
         <span class="n">r_col</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">p</span>  <span class="c1"># r is the first of each triplet</span>
-        <span class="n">ax_r</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">r_col</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Particle </span><span class="si">{</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ax_r</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">r_col</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;P</span><span class="si">{</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> ($</span><span class="se">\\</span><span class="s2">ell_0$=</span><span class="si">{</span><span class="n">initial_L_values</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
     <span class="n">ax_r</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$t$ (Myr)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">ax_r</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$r$ (kpc)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
-    <span class="n">ax_r</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Radius vs. Time (Lowest $\ell$)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-    <span class="n">ax_r</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax_r</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;Radius vs. Time (</span><span class="si">{</span><span class="n">label_descriptor</span><span class="si">}</span><span class="s2"> $\ell$)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+    <span class="n">ax_r</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
     <span class="n">ax_r</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># 2) Energies vs. time</span>
     <span class="c1">#   second of each triplet is the energy</span>
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nlowest</span><span class="p">):</span>
         <span class="n">e_col</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">p</span>
-        <span class="n">ax_e</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">e_col</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">fr</span><span class="s2">&quot;$\mathcal</span><span class="se">{{</span><span class="s2">E</span><span class="se">}}</span><span class="s2">$ P</span><span class="si">{</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ax_e</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">e_col</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;P</span><span class="si">{</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> ($</span><span class="se">\\</span><span class="s2">ell_0$=</span><span class="si">{</span><span class="n">initial_L_values</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
     <span class="n">ax_e</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$t$ (Myr)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">ax_e</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\mathcal</span><span class="si">{E}</span><span class="s2">$ (km$^2$/s$^2$)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
-    <span class="n">ax_e</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy vs. Time (Lowest $\ell$)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-    <span class="n">ax_e</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax_e</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;Energy vs. Time (</span><span class="si">{</span><span class="n">label_descriptor</span><span class="si">}</span><span class="s2"> $\ell$)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+    <span class="n">ax_e</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
     <span class="n">ax_e</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># 3) % deviation from average energy</span>
@@ -3511,11 +3527,11 @@
         <span class="c1"># average of that particle&#39;s energy over time</span>
         <span class="n">single_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">energies</span><span class="p">[:,</span> <span class="n">p</span><span class="p">])</span>
         <span class="n">pct_dev</span> <span class="o">=</span> <span class="p">(</span><span class="n">energies</span><span class="p">[:,</span> <span class="n">p</span><span class="p">]</span> <span class="o">-</span> <span class="n">single_mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">single_mean</span> <span class="o">*</span> <span class="mf">100.0</span>
-        <span class="n">ax_dev</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">pct_dev</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;P</span><span class="si">{</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ax_dev</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">pct_dev</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;P</span><span class="si">{</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> ($</span><span class="se">\\</span><span class="s2">ell_0$=</span><span class="si">{</span><span class="n">initial_L_values</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
     <span class="n">ax_dev</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$t$ (Myr)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">ax_dev</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\Delta\mathcal</span><span class="si">{E}</span><span class="s2">/\langle\mathcal</span><span class="si">{E}</span><span class="s2">\rangle$ (%)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
-    <span class="n">ax_dev</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy Deviation (Lowest $\ell$)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-    <span class="n">ax_dev</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax_dev</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;Energy Deviation (</span><span class="si">{</span><span class="n">label_descriptor</span><span class="si">}</span><span class="s2"> $\ell$)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+    <span class="n">ax_dev</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
     <span class="n">ax_dev</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Save &amp; close figure</span>
@@ -3865,58 +3881,48 @@
 <span class="sd">        These parameters are used throughout the code for file paths,</span>
 <span class="sd">        plot labels, and determining output filenames.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
-
-        <span class="c1"># Default values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">npts</span> <span class="o">=</span> <span class="mi">30000</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span> <span class="o">=</span> <span class="mi">1001</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span> <span class="o">=</span> <span class="mi">5</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># The last three parts should always be npts, Ntimes, tfinal_factor</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">npts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-
-                <span class="c1"># The file_tag is everything before the last three parts</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-                    <span class="c1"># Join any remaining parts as the file_tag</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
-                <span class="c1"># Fallback if parsing fails, read from lastparams.dat</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">npts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span> <span class="o">=</span> <span class="n">read_lastparams</span><span class="p">(</span><span class="n">return_suffix</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Fallback to reading from lastparams.dat</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">npts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span> <span class="o">=</span> <span class="n">read_lastparams</span><span class="p">(</span><span class="n">return_suffix</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-        <span class="c1"># If command-line suffix was provided, keep it as-is; otherwise use the reconstructed one</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">suffix</span><span class="p">:</span>
-            <span class="c1"># Rebuild suffix to ensure consistency</span>
+        <span class="c1"># First, try to read parameters from the corresponding lastparams file</span>
+        <span class="c1"># This is the most reliable source of truth for the parameters.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">npts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span> <span class="o">=</span> <span class="n">read_lastparams</span><span class="p">(</span>
+                <span class="n">user_suffix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="n">return_suffix</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="c1"># Reconstruct the suffix from the authoritative source to ensure consistency</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">npts</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">npts</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded parameters for suffix &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&#39; from its lastparams file.&quot;</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
+            <span class="c1"># Fallback to parsing the suffix string itself if lastparams&lt;suffix&gt;.dat doesn&#39;t exist</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find lastparams file for suffix &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&#39;. Falling back to parsing suffix string.&quot;</span><span class="p">)</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span> <span class="c1"># Format: _tag_npts_ntimes_tfinal</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span><span class="p">,</span> <span class="n">npts_str</span><span class="p">,</span> <span class="n">ntimes_str</span><span class="p">,</span> <span class="n">tfinal_str</span> <span class="o">=</span> <span class="n">parts</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span> <span class="c1"># Format: _npts_ntimes_tfinal</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">npts_str</span><span class="p">,</span> <span class="n">ntimes_str</span><span class="p">,</span> <span class="n">tfinal_str</span> <span class="o">=</span> <span class="n">parts</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Suffix does not match expected format.&quot;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">npts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">npts_str</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Ntimes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ntimes_str</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tfinal_factor</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tfinal_str</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parsed parameters from suffix string: npts=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">npts</span><span class="si">}</span><span class="s2">, tag=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_tag</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Suffix &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&#39; is malformed and its lastparams file was not found.&quot;</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Configuration.setup_file_paths">
 <a class="viewcode-back" href="../python_api/index.html#nsphere_plot.Configuration.setup_file_paths">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">setup_file_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate a dictionary mapping file types to their full file paths.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">            Dictionary where keys are file type identifiers (e.g., &quot;particles&quot;,</span>
-<span class="sd">            &quot;density_profile&quot;) and values are the corresponding file paths with</span>
-<span class="sd">            the configured suffix.</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        This method constructs paths for all possible data files that might be</span>
-<span class="sd">        used in the visualization process. The actual existence of these files</span>
-<span class="sd">        is checked later when they are accessed.</span>
+<span class="sd">        All filenames now correctly include the suffix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;particles&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/particles</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span><span class="p">,</span>
@@ -3936,7 +3942,9 @@
             <span class="s2">&quot;hist_init&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/2d_hist_initial</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span><span class="p">,</span>
             <span class="s2">&quot;hist_final&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/2d_hist_final</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span><span class="p">,</span>
             <span class="s2">&quot;lowest_l_trajectories&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/lowest_l_trajectories</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;debug_energy_compare&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/debug_energy_compare</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span>
+            <span class="s2">&quot;debug_energy_compare&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/debug_energy_compare</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;total_energy_vs_time&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/total_energy_vs_time</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lowest_radius_ids&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data/lowest_radius_ids</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span> <span class="c1"># Added for energy plots</span>
         <span class="p">}</span></div>
 
 
@@ -3987,6 +3995,139 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">animations</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">energy_plots</span> <span class="ow">or</span>
                 <span class="p">(</span><span class="ow">not</span> <span class="n">only_flags_active</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">no_animations</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">no_energy_plots</span><span class="p">)))</span></div>
 </div>
+
+
+<div class="viewcode-block" id="plot_total_energy_diagnostics">
+<a class="viewcode-back" href="../python_api/index.html#nsphere_plot.plot_total_energy_diagnostics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_total_energy_diagnostics</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;results/total_energy_diagnostics.png&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a three-panel diagnostic plot for total system energy conservation.</span>
+<span class="sd">    </span>
+<span class="sd">    Panel 1: Absolute values of KE, PE, and Total Energy vs time</span>
+<span class="sd">    Panel 2: Percent change from initial values for all three quantities (auto-scaled)</span>
+<span class="sd">    Panel 3: Percent change of total energy only (zoomed in for detail)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_file : str</span>
+<span class="sd">        Path to the total_energy_vs_time binary file from nsphere</span>
+<span class="sd">    output_file : str</span>
+<span class="sd">        Path to save the output plot (PNG format)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        Path to the saved plot file, or None if plotting failed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total energy file </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Read the binary file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        
+        <span class="c1"># The file is pure binary - fprintf_bin ignores the header string</span>
+        <span class="c1"># because it has no format specifiers (%f, %g, etc.)</span>
+        <span class="c1"># Data starts at byte 0: 5 floats per row (time, KE, PE, total_E, frac_change)</span>
+        
+        <span class="c1"># Parse binary data</span>
+        <span class="n">num_floats</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span>
+        <span class="k">if</span> <span class="n">num_floats</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data size mismatch in </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">num_floats</span><span class="si">}</span><span class="s2"> floats, expected multiple of 5&quot;</span><span class="p">)</span>
+            <span class="c1"># Try to proceed with what we have</span>
+            <span class="n">num_floats</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_floats</span> <span class="o">//</span> <span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span>
+        
+        <span class="n">values</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">num_floats</span><span class="si">}</span><span class="s1">f&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[:</span><span class="n">num_floats</span><span class="o">*</span><span class="mi">4</span><span class="p">])</span>
+        
+        <span class="c1"># Reshape into rows</span>
+        <span class="n">nrows</span> <span class="o">=</span> <span class="n">num_floats</span> <span class="o">//</span> <span class="mi">5</span>
+        <span class="k">if</span> <span class="n">nrows</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No valid data rows in </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="c1"># Extract columns</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">5</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">)])</span>
+        <span class="n">total_ke</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">5</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">)])</span>
+        <span class="n">total_pe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">5</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">)])</span>
+        <span class="n">total_e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">5</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">)])</span>
+        
+        <span class="c1"># Calculate mean values for percent change calculation</span>
+        <span class="n">ke_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">total_ke</span><span class="p">)</span>
+        <span class="n">pe_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">total_pe</span><span class="p">)</span>
+        <span class="n">e_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">total_e</span><span class="p">)</span>
+        
+        <span class="c1"># Calculate percent changes from mean</span>
+        <span class="n">ke_percent</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">total_ke</span> <span class="o">-</span> <span class="n">ke_mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ke_mean</span><span class="p">)</span> <span class="k">if</span> <span class="n">ke_mean</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">total_ke</span><span class="p">)</span>
+        <span class="n">pe_percent</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">total_pe</span> <span class="o">-</span> <span class="n">pe_mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pe_mean</span><span class="p">)</span> <span class="k">if</span> <span class="n">pe_mean</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">total_pe</span><span class="p">)</span>
+        <span class="n">e_percent</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">total_e</span> <span class="o">-</span> <span class="n">e_mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">e_mean</span><span class="p">)</span> <span class="k">if</span> <span class="n">e_mean</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">total_e</span><span class="p">)</span>
+        
+        <span class="c1"># Create the three-panel figure</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        
+        <span class="c1"># Panel 1: True energy values (not absolute)</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">total_ke</span><span class="p">,</span> <span class="s1">&#39;r-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Kinetic Energy&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">total_pe</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Potential Energy&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">total_e</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Energy&#39;</span><span class="p">)</span>
+        
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (Myr)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Energy (code units)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;System Energy Evolution&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+        
+        <span class="c1"># Panel 2: Percent change of all quantities from mean (auto-scaled)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">ke_percent</span><span class="p">,</span> <span class="s1">&#39;r-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;KE </span><span class="si">% f</span><span class="s1">rom mean&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">pe_percent</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;PE </span><span class="si">% f</span><span class="s1">rom mean&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">e_percent</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total E </span><span class="si">% f</span><span class="s1">rom mean&#39;</span><span class="p">)</span>
+        
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (Myr)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;% Change from Mean&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Relative Energy Changes from Mean&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        
+        <span class="c1"># Panel 3: Total energy percent change from mean (zoomed)</span>
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">e_percent</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Total Energy </span><span class="si">% f</span><span class="s1">rom mean&#39;</span><span class="p">)</span>
+        
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (Myr)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;% Change in Total Energy from Mean&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Total Energy Conservation Detail&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        
+        <span class="c1"># Set y-axis limits for better visibility</span>
+        <span class="n">max_e_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">e_percent</span><span class="p">))</span>
+        <span class="n">y_margin</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">max_e_var</span> <span class="o">*</span> <span class="mf">1.2</span><span class="p">)</span>  <span class="c1"># At least 0.001% margin</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="n">y_margin</span><span class="p">,</span> <span class="n">y_margin</span><span class="p">)</span>
+        
+        <span class="n">ax3</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+        
+        <span class="c1"># Overall figure adjustments</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Total System Energy Diagnostics&#39;</span><span class="p">,</span> 
+                    <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.995</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">rect</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">])</span>
+        
+        <span class="c1"># Save the plot</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total energy diagnostics plot saved to </span><span class="si">{</span><span class="n">output_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_file</span>
+        
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error creating total energy diagnostics plot: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="parse_arguments">
@@ -4359,28 +4500,48 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Single trajectory file </span><span class="si">{</span><span class="n">file_paths</span><span class="p">[</span><span class="s1">&#39;single_trajectory&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found, skipping.&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Lowest L 3-panel - check and load</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading lowest L trajectories data from </span><span class="si">{</span><span class="n">file_paths</span><span class="p">[</span><span class="s1">&#39;lowest_l_trajectories&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Lowest L or Chosen L 3-panel - check for both, prioritize chosen_l</span>
+    <span class="n">chosen_l_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/chosen_l_trajectories</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span>
+    <span class="n">lowest_l_file</span> <span class="o">=</span> <span class="n">file_paths</span><span class="p">[</span><span class="s2">&quot;lowest_l_trajectories&quot;</span><span class="p">]</span>
+
+    <span class="n">actual_input_file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">file_prefix_for_plot</span> <span class="o">=</span> <span class="s2">&quot;lowestl&quot;</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">chosen_l_file</span><span class="p">):</span>
+        <span class="n">actual_input_file</span> <span class="o">=</span> <span class="n">chosen_l_file</span>
+        <span class="n">file_prefix_for_plot</span> <span class="o">=</span> <span class="s2">&quot;chosenl&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading chosen L trajectories data from </span><span class="si">{</span><span class="n">chosen_l_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">lowest_l_file</span><span class="p">):</span>
+        <span class="n">actual_input_file</span> <span class="o">=</span> <span class="n">lowest_l_file</span>
+        <span class="n">file_prefix_for_plot</span> <span class="o">=</span> <span class="s2">&quot;lowestl&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading lowest L trajectories data from </span><span class="si">{</span><span class="n">lowest_l_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
     <span class="n">update_combined_progress</span><span class="p">(</span><span class="s2">&quot;trajectory_data_loading&quot;</span><span class="p">,</span> <span class="s2">&quot;loading_lowest_l_trajectories&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_paths</span><span class="p">[</span><span class="s2">&quot;lowest_l_trajectories&quot;</span><span class="p">]):</span>
-        <span class="n">lowest_l_output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/lowestL_3panel</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.png&quot;</span>
-        <span class="n">prepared_plots</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;lowest_l&quot;</span><span class="p">,</span> <span class="n">file_paths</span><span class="p">[</span><span class="s2">&quot;lowest_l_trajectories&quot;</span><span class="p">],</span> <span class="n">lowest_l_output</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">actual_input_file</span><span class="p">:</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/</span><span class="si">{</span><span class="n">file_prefix_for_plot</span><span class="si">}</span><span class="s2">_3panel</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.png&quot;</span>
+        <span class="n">prepared_plots</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;lowest_l&quot;</span><span class="p">,</span> <span class="n">actual_input_file</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">,</span> <span class="n">file_prefix_for_plot</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lowest L trajectories file </span><span class="si">{</span><span class="n">file_paths</span><span class="p">[</span><span class="s1">&#39;lowest_l_trajectories&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found, skipping.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Neither chosen_l nor lowest_l trajectories file found, skipping.&quot;</span><span class="p">)</span>
 
     <span class="c1"># Energy and angular momentum data - check and load</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading energy and angular momentum data from </span><span class="si">{</span><span class="n">file_paths</span><span class="p">[</span><span class="s1">&#39;energy_and_angular_momentum&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">update_combined_progress</span><span class="p">(</span><span class="s2">&quot;trajectory_data_loading&quot;</span><span class="p">,</span> <span class="s2">&quot;loading_energy_angular_momentum&quot;</span><span class="p">)</span>
 
     <span class="c1"># Generate trajectory plots using the combined progress tracker</span>
-    <span class="k">for</span> <span class="n">plot_type</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span> <span class="ow">in</span> <span class="n">prepared_plots</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">prepared_plots</span><span class="p">:</span>
+        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">input_file</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">output_file</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="kc">None</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">plot_type</span> <span class="o">==</span> <span class="s2">&quot;trajectories&quot;</span><span class="p">:</span>
                 <span class="n">plot_trajectories</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">plot_type</span> <span class="o">==</span> <span class="s2">&quot;single&quot;</span><span class="p">:</span>
                 <span class="n">plot_single_trajectory</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">plot_type</span> <span class="o">==</span> <span class="s2">&quot;lowest_l&quot;</span><span class="p">:</span>
-                <span class="n">plot_lowestL_trajectories_3panel</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+                <span class="n">plot_lowestL_trajectories_3panel</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">file_prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
 
             <span class="c1"># Update the combined progress tracker (shared with energy plots)</span>
             <span class="n">update_combined_progress</span><span class="p">(</span><span class="s2">&quot;trajectory_plots&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
@@ -5439,13 +5600,11 @@
     <span class="n">fname</span><span class="p">,</span> <span class="n">local_suffix</span> <span class="o">=</span> <span class="n">task_data</span>
     <span class="k">global</span> <span class="n">ncol_Rank_Mass_Rad_VRad_unsorted</span>
 
-    <span class="c1"># Extract the timestep from the filename</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_unsorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">local_suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+    <span class="c1"># Use the suffix-aware helper</span>
+    <span class="n">snap</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">local_suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">snap</span> <span class="o">==</span> <span class="mi">999999999</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Regex failed for sorted energy file </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> with suffix &#39;</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="n">snap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># Reload tracked IDs inside the worker</span>
     <span class="n">lowest_radius_ids_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/lowest_radius_ids</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span>
@@ -5488,11 +5647,10 @@
 <span class="sd">        (snapshot_number, data) if successful, otherwise None.</span>
 <span class="sd">        &#39;data&#39; is a structured numpy array containing the file contents.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Extract the timestep from the filename.</span>
-    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_sorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">mo</span><span class="p">:</span>
+    <span class="c1"># Use the suffix-aware helper</span>
+    <span class="n">snap</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">snap</span> <span class="o">==</span> <span class="mi">999999999</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">snap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># Constants for the expected number of columns</span>
     <span class="n">ncol_Rank_Mass_Rad_VRad_sorted</span> <span class="o">=</span> <span class="mi">8</span>
@@ -5529,13 +5687,11 @@
     <span class="c1"># Unpack arguments</span>
     <span class="n">fname</span><span class="p">,</span> <span class="n">project_root_path</span><span class="p">,</span> <span class="n">local_suffix</span> <span class="o">=</span> <span class="n">task_data_with_suffix</span>
     
-    <span class="c1"># Extract the timestep from the filename</span>
-    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_unsorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">local_suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">mo</span><span class="p">:</span>
+    <span class="c1"># Use the suffix-aware helper</span>
+    <span class="n">snap</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">local_suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">snap</span> <span class="o">==</span> <span class="mi">999999999</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Regex failed for unsorted file </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> with suffix &#39;</span><span class="si">{</span><span class="n">local_suffix</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="n">snap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># Constants for the expected number of columns</span>
     <span class="n">ncol</span> <span class="o">=</span> <span class="n">ncol_Rank_Mass_Rad_VRad_unsorted</span> <span class="c1"># Should be 7</span>
@@ -5588,12 +5744,10 @@
 <span class="sd">    tuple or None</span>
 <span class="sd">        (snapshot_number, energy_values) if successful or None if there was an error.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Extract the timestep from the filename</span>
-    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_sorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">mo</span><span class="p">:</span>
+    <span class="c1"># Use the suffix-aware helper</span>
+    <span class="n">snap</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">snap</span> <span class="o">==</span> <span class="mi">999999999</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="n">snap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># Load the particle IDs to track (particles with lowest initial radius)</span>
     <span class="n">lowest_radius_ids_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/lowest_radius_ids</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span>
@@ -5643,11 +5797,10 @@
 <span class="sd">    tuple or None</span>
 <span class="sd">        (snapshot_number, decimated_data) if successful or None if there was an error.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Extract the timestep from the filename</span>
-    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_sorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">mo</span><span class="p">:</span>
+    <span class="c1"># Use the suffix-aware helper</span>
+    <span class="n">snap</span> <span class="o">=</span> <span class="n">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">snap</span> <span class="o">==</span> <span class="mi">999999999</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">snap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># Read the file using the safe loader</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">safe_load_and_filter_bin</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">ncol_Rank_Mass_Rad_VRad_sorted</span><span class="p">,</span>
@@ -6247,22 +6400,20 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_Rank_snapnum</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">suffix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extract snapshot number from a rank file name.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    fname : str</span>
-<span class="sd">        The filename.</span>
-<span class="sd">    suffix : str</span>
-<span class="sd">        The suffix to remove from the filename.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    int</span>
-<span class="sd">        The snapshot number.</span>
+<span class="sd">    Now handles both sorted and unsorted file patterns.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_sorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="c1"># Try sorted pattern first</span>
+    <span class="n">pattern_sorted</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_sorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span>
+    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern_sorted</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mo</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># Fallback to unsorted pattern</span>
+    <span class="n">pattern_unsorted</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;Rank_Mass_Rad_VRad_unsorted_t(\d+)&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span>
+    <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern_unsorted</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mo</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
     <span class="k">return</span> <span class="mi">999999999</span>
 
 <div class="viewcode-block" id="calculate_reasonable_vmax">
@@ -7091,7 +7242,9 @@
     <span class="n">unsorted_pattern</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data/Rank_Mass_Rad_VRad_unsorted_t*</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.dat&quot;</span>
     <span class="n">unsorted_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">unsorted_pattern</span><span class="p">)</span>
 
-    <span class="c1"># Filter to keep ONLY files that match the exact pattern, same as with the sorted files</span>
+    <span class="c1"># Filter unsorted files as well</span>
+    <span class="n">correct_unsorted_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;data/Rank_Mass_Rad_VRad_unsorted_t\d+&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">)</span>
+    <span class="n">unsorted_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">unsorted_files</span> <span class="k">if</span> <span class="n">correct_unsorted_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="p">)]</span>
     <span class="n">correct_unsorted_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;data/Rank_Mass_Rad_VRad_unsorted_t\d+&#39;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">suffix</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.dat$&#39;</span><span class="p">)</span>
     <span class="n">unsorted_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">unsorted_files</span> <span class="k">if</span> <span class="n">correct_unsorted_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="p">)]</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_rank_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> rank sorted snapshot files and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">unsorted_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> unsorted snapshot files.&quot;</span><span class="p">)</span>
@@ -8630,6 +8783,14 @@
 
         <span class="c1"># Generate the sorted energy plot</span>
         <span class="n">sorted_output</span> <span class="o">=</span> <span class="n">generate_sorted_energy_plot</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
+        
+        <span class="c1"># Generate total energy diagnostics plot if file exists</span>
+        <span class="n">total_energy_file</span> <span class="o">=</span> <span class="n">file_paths</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total_energy_vs_time&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">total_energy_file</span><span class="p">):</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;results/total_energy_diagnostics</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.png&quot;</span>
+            <span class="n">total_energy_output</span> <span class="o">=</span> <span class="n">plot_total_energy_diagnostics</span><span class="p">(</span><span class="n">total_energy_file</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">total_energy_output</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total energy diagnostics plot saved to </span><span class="si">{</span><span class="n">total_energy_output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Calculate final timing statistics</span>
         <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">energy_plot_start_time</span>
@@ -8769,13 +8930,13 @@
         <span class="c1"># Skip if explicitly told not to generate phase space plots</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">no_phase_space</span><span class="p">:</span>
             <span class="n">print_header</span><span class="p">(</span><span class="s2">&quot;Generating Phase Space Initial Histogram&quot;</span><span class="p">)</span>
-            <span class="n">generate_initial_phase_histogram</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+            <span class="n">generate_initial_phase_histogram</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
             <span class="n">print_footer</span><span class="p">(</span><span class="s2">&quot;Initial phase space histogram created successfully.&quot;</span><span class="p">)</span>
 
             <span class="c1"># If phase_space_only is true, also generate the animation right away</span>
             <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">phase_space</span><span class="p">:</span>
                 <span class="n">print_header</span><span class="p">(</span><span class="s2">&quot;Generating Phase Space Animation&quot;</span><span class="p">)</span>
-                <span class="n">generate_phase_space_animation</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fps</span><span class="p">)</span> <span class="c1"># Pass full config</span>
+                <span class="n">generate_phase_space_animation</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fps</span><span class="p">)</span>
                 <span class="c1"># Add separator and completion message for phase space animation</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">get_separator_line</span><span class="p">(</span><span class="n">char</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">print_status</span><span class="p">(</span><span class="s2">&quot;Phase space animation generated successfully.&quot;</span><span class="p">)</span>
@@ -8787,7 +8948,7 @@
         <span class="c1"># Skip if explicitly told not to generate phase comparison</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">no_phase_comparison</span><span class="p">:</span>
             <span class="n">print_header</span><span class="p">(</span><span class="s2">&quot;Generating Phase Space Comparison&quot;</span><span class="p">)</span>
-            <span class="n">generate_comparison_plot</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+            <span class="n">generate_comparison_plot</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
             <span class="n">print_footer</span><span class="p">(</span><span class="s2">&quot;Phase space comparison created successfully.&quot;</span><span class="p">)</span>
             
     <span class="c1"># --- Generate 1D Variable Distributions ---</span>

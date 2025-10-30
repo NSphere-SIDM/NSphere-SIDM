@@ -976,74 +976,65 @@ def read_lastparams(filename="data/lastparams.dat", return_suffix=True, user_suf
     Parameters
     ----------
     filename : str, optional
-        Path to the lastparams.dat file. Default is "data/lastparams.dat".
+        Base path to the lastparams.dat file.
     return_suffix : bool, optional
         If True, return a suffix string. If False, return individual parameters.
-        Default is True.
     user_suffix : str, optional
-        If provided, look for lastparams_user_suffix.dat instead of lastparams.dat.
+        If provided, look for lastparams<user_suffix>.dat instead of lastparams.dat.
 
     Returns
     -------
     str or tuple
-        If return_suffix is True, returns a string like "_[filetag]_npts_Ntimes_tfinal_factor"
-        or just "_npts_Ntimes_tfinal_factor" if no file tag is present.
+        If return_suffix is True, returns a string like "_[filetag]_npts_Ntimes_tfinal_factor".
         If return_suffix is False, returns a tuple of (npts, Ntimes, tfinal_factor, file_tag).
     """
     global showing_help
 
     default_suffix = ""
-    default_params = (30000, 1001, 5, "")  # Default values for (npts, Ntimes, tfinal_factor, file_tag)
+    default_params = (30000, 1001, 5, "")  # Default values
 
-    # If showing help, return default values without file operations
     if showing_help:
         return default_suffix if return_suffix else default_params
 
-    # Always use data/lastparams.dat unless a specific suffix was provided
+    # Determine which lastparams file to read
     if user_suffix:
-        # If user supplied a suffix, use lastparams_suffix.dat
-        suffix_to_use = user_suffix.lstrip('_')  # Remove leading underscore if present
-        filename = f"data/lastparams_{suffix_to_use}.dat"
-        logger.info(f"Using user-specified suffix: {suffix_to_use}, looking for file: {filename}")
+        # If user supplied a suffix, use lastparams<suffix>.dat
+        filename = f"data/lastparams{user_suffix}.dat"
+        logger.info(f"Attempting to read parameters from user-specified file: {filename}")
     else:
-        # Otherwise use lastparams.dat
+        # Otherwise, use the default lastparams.dat which points to the latest run
         filename = "data/lastparams.dat"
-        logger.info(f"Using default lastparams.dat file")
+        logger.info(f"Reading parameters from default file: {filename}")
 
     if not os.path.exists(filename):
-        print(truncate_and_pad_string(f"Error: Could not find {filename}, and no suffixed lastparams files were found."))
-        print(truncate_and_pad_string("Please run the simulation before plotting."))
-        print(truncate_and_pad_string("Alternatively, specify parameters using the --suffix command line argument."))
+        print(truncate_and_pad_string(f"Error: Could not find parameter file: {filename}"))
+        print(truncate_and_pad_string("Please run the simulation or specify a valid --suffix."))
         sys.exit(1)
 
     try:
         with open(filename, "r") as f:
             line = f.readline().strip()
-            if not line:
-                return default_suffix if return_suffix else default_params
+        if not line:
+            return default_suffix if return_suffix else default_params
 
-            parts = line.split(maxsplit=3)  # Split into at most 4 parts to handle file tag with spaces
-            if len(parts) < 3:
-                return default_suffix if return_suffix else default_params
+        parts = line.split(maxsplit=3)
+        if len(parts) < 3:
+            return default_suffix if return_suffix else default_params
 
-            npts = int(parts[0])
-            Ntimes = int(parts[1])
-            tfinal_factor = int(parts[2])
+        npts, Ntimes, tfinal_factor = map(int, parts[:3])
+        file_tag = parts[3] if len(parts) > 3 else ""
 
-            # Get file tag if available (might be empty)
-            file_tag = parts[3] if len(parts) > 3 else ""
-
-            # Log the file tag found in the file
-            logger.info(f"File tag from lastparams file: '{file_tag}'")
+        logger.info(f"Read parameters: npts={npts}, Ntimes={Ntimes}, tfinal={tfinal_factor}, tag='{file_tag}'")
 
         if return_suffix:
-            # Build suffix based on file tag
+            # Reconstruct the suffix from the read parameters
             if file_tag:
                 return f"_{file_tag}_{npts}_{Ntimes}_{tfinal_factor}"
             else:
                 return f"_{npts}_{Ntimes}_{tfinal_factor}"
         else:
             return (npts, Ntimes, tfinal_factor, file_tag)
+
     except Exception as e:
         print(truncate_and_pad_string(f"Warning: Error reading {filename}: {e}"))
         return default_suffix if return_suffix else default_params
@@ -1729,13 +1720,16 @@ def get_snapshot_number(filename, pattern=None):
     that follow a pattern like "Rank_Mass_Rad_VRad_sorted_t00012". Returns a large
     value for non-matching files to ensure they sort after valid snapshot files.
     """
+    global suffix
     if pattern is None:
-        pattern = re.compile(r'Rank_Mass_Rad_VRad_sorted_t(\d+)')
+        # Build a pattern that correctly handles the suffix
+        pattern_str = r'Rank_Mass_Rad_VRad_sorted_t(\d+)' + re.escape(suffix) + r'\.dat$'
+        pattern = re.compile(pattern_str)
 
     match = pattern.search(filename)
     if match:
         return int(match.group(1))
-    return 999999999  # Default high value for non-matching files
+    return 999999999
 
 def get_file_prefix(filepath):
     """
@@ -2438,7 +2432,7 @@ def safe_load_particle_ids_bin(filename, ncols, particle_ids, dtype=np.float32):
     finally:
         gc.collect()
 
-def plot_density(r_values, rho_values, output_file="density_profile.png"):
+def plot_density(r_values, rho_values, output_file=None):
     """
     Plot density profile as a function of radius and save to file.
 
@@ -2478,6 +2472,8 @@ def plot_density(r_values, rho_values, output_file="density_profile.png"):
         plt.legend(fontsize=12)
         plt.grid(True, which='both', linestyle='--', alpha=0.7)
         plt.tight_layout()
+        if output_file is None:
+            output_file = f"results/density_profile{suffix}.png"
         plt.savefig(output_file, dpi=200)
         plt.close()
     else:
@@ -2486,6 +2482,8 @@ def plot_density(r_values, rho_values, output_file="density_profile.png"):
         plt.text(0.5, 0.5, 'No valid data for log-log plot', 
                  transform=plt.gca().transAxes, ha='center', va='center')
         plt.title(r'Radial Density Profile $\rho(r)$ (Log-Log)', fontsize=14)
+        if output_file is None:
+            output_file = f"results/density_profile{suffix}.png"
         plt.savefig(output_file, dpi=200)
         plt.close()
 
@@ -2493,7 +2491,7 @@ def plot_density(r_values, rho_values, output_file="density_profile.png"):
     log_plot_saved(output_file)
     return output_file
 
-def plot_mass_enclosed(r_values, mass_values, output_file="mass_enclosed.png"):
+def plot_mass_enclosed(r_values, mass_values, output_file=None):
     """
     Plot enclosed mass as a function of radius and save to file.
 
@@ -2525,14 +2523,16 @@ def plot_mass_enclosed(r_values, mass_values, output_file="mass_enclosed.png"):
     plt.legend(fontsize=12)
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
+    if output_file is None:
+        output_file = f"results/mass_enclosed{suffix}.png"
     plt.savefig(output_file, dpi=150)
     plt.close()
 
-    
+
     log_plot_saved(output_file)
     return output_file
 
-def plot_psi(r_values, psi_values, output_file="psi_profile.png"):
+def plot_psi(r_values, psi_values, output_file=None):
     """
     Plot gravitational potential (Psi) as a function of radius and save to file.
 
@@ -2566,6 +2566,8 @@ def plot_psi(r_values, psi_values, output_file="psi_profile.png"):
     plt.legend(fontsize=12)
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
+    if output_file is None:
+        output_file = f"results/psi_profile{suffix}.png"
     plt.savefig(output_file, dpi=150)
     plt.close()
 
@@ -2633,21 +2635,18 @@ def plot_drho_dpsi(psi_values, drho_dpsi, output_file="drho_dpsi.png"):
     """
 
     psi_values, drho_dpsi = filter_finite_rows(psi_values, drho_dpsi)
-    
-    # Plot negative of drho_dpsi on log scale
-    neg_drho_dpsi = -drho_dpsi
-    
+
     # Filter for positive values only for log scale
-    positive_mask = (psi_values > 0) & (neg_drho_dpsi > 0)
+    positive_mask = (psi_values > 0) & (drho_dpsi > 0)
     if np.any(positive_mask):
         psi_pos = psi_values[positive_mask]
-        neg_drho_dpsi_pos = neg_drho_dpsi[positive_mask]
-        
+        drho_dpsi_pos = drho_dpsi[positive_mask]
+
         plt.figure(figsize=(10, 6))
-        plt.loglog(psi_pos, neg_drho_dpsi_pos, label=r'$-d\rho/d\Psi$')
+        plt.loglog(psi_pos, drho_dpsi_pos, label=r'$d\rho/d\Psi$')
         plt.xlabel(r'$\Psi$ (km$^2$/s$^2$)', fontsize=12)
-        plt.ylabel(r'$-d\rho/d\Psi$ ((M$_\odot$/kpc$^3$)/(km$^2$/s$^2$))', fontsize=12)
-        plt.title(r'Negative Density Derivative $-d\rho/d\Psi$ (Log-Log)', fontsize=14)
+        plt.ylabel(r'$d\rho/d\Psi$ ((M$_\odot$/kpc$^3$)/(km$^2$/s$^2$))', fontsize=12)
+        plt.title(r'Density Derivative $d\rho/d\Psi$ (Log-Log)', fontsize=14)
         plt.legend(fontsize=12)
         plt.grid(True, which='both', linestyle='--', alpha=0.7)
         plt.tight_layout()
@@ -2656,9 +2655,9 @@ def plot_drho_dpsi(psi_values, drho_dpsi, output_file="drho_dpsi.png"):
     else:
         # Fallback to empty plot if no valid data
         plt.figure(figsize=(10, 6))
-        plt.text(0.5, 0.5, 'No valid data for log-log plot', 
+        plt.text(0.5, 0.5, 'No valid data for log-log plot',
                  transform=plt.gca().transAxes, ha='center', va='center')
-        plt.title(r'Negative Density Derivative $-d\rho/d\Psi$ (Log-Log)', fontsize=14)
+        plt.title(r'Density Derivative $d\rho/d\Psi$ (Log-Log)', fontsize=14)
         plt.savefig(output_file, dpi=150)
         plt.close()
 
@@ -3202,9 +3201,9 @@ def plot_angular_momentum_time(input_file, output_file):
     log_plot_saved(output_file)
     return output_file
 
-def plot_lowestL_trajectories_3panel(input_file="lowest_l_trajectories.dat", output_file="lowestl_3panel.png"):
+def plot_lowestL_trajectories_3panel(input_file="lowest_l_trajectories.dat", output_file="lowestl_3panel.png", file_prefix="lowestl"):
     """
-    Create a 3-panel plot showing trajectories of particles with lowest angular momentum.
+    Create a 3-panel plot showing trajectories of selected particles.
 
     Parameters
     ----------
@@ -3213,6 +3212,8 @@ def plot_lowestL_trajectories_3panel(input_file="lowest_l_trajectories.dat", out
         Default is "lowest_l_trajectories.dat".
     output_file : str, optional
         Path to save the output plot. Default is "lowestl_3panel.png".
+    file_prefix : str, optional
+        Prefix to use for labeling ("lowestl" or "chosenl").
 
     Returns
     -------
@@ -3227,6 +3228,10 @@ def plot_lowestL_trajectories_3panel(input_file="lowest_l_trajectories.dat", out
     1) Radii vs. time for each particle
     2) Energies vs. time for each particle
     3) Percentage deviation from average energy vs. time for each particle
+
+    Label changes based on file type:
+    - "Lowest" for lowest_l files
+    - "Chosen" for chosen_l files
     """
 
     # Load the data
@@ -3253,25 +3258,35 @@ def plot_lowestL_trajectories_3panel(input_file="lowest_l_trajectories.dat", out
     ax_e = axes[1]
     ax_dev = axes[2]
 
+    # Determine label text based on file prefix
+    label_descriptor = "Chosen" if file_prefix == "chosenl" else "Lowest"
+
+    # Extract initial L values from first timestep for legend
+    initial_L_values = []
+    for p in range(nlowest):
+        L_col = 3 + 3*p  # L is the third of each triplet
+        initial_L = data[0, L_col] if data.shape[0] > 0 else 0.0
+        initial_L_values.append(initial_L)
+
     # 1) Radii vs. time
     for p in range(nlowest):
         r_col = 1 + 3*p  # r is the first of each triplet
-        ax_r.plot(time, data[:, r_col], label=f"Particle {p+1}")
+        ax_r.plot(time, data[:, r_col], label=f"P{p+1} ($\\ell_0$={initial_L_values[p]:.3f})")
     ax_r.set_xlabel(r"$t$ (Myr)", fontsize=12)
     ax_r.set_ylabel(r"$r$ (kpc)", fontsize=12)
-    ax_r.set_title(r"Radius vs. Time (Lowest $\ell$)", fontsize=14)
-    ax_r.legend(fontsize=10)
+    ax_r.set_title(rf"Radius vs. Time ({label_descriptor} $\ell$)", fontsize=14)
+    ax_r.legend(fontsize=9)
     ax_r.grid(True)
 
     # 2) Energies vs. time
     #   second of each triplet is the energy
     for p in range(nlowest):
         e_col = 2 + 3*p
-        ax_e.plot(time, data[:, e_col], label=fr"$\mathcal{{E}}$ P{p+1}")
+        ax_e.plot(time, data[:, e_col], label=f"P{p+1} ($\\ell_0$={initial_L_values[p]:.3f})")
     ax_e.set_xlabel(r"$t$ (Myr)", fontsize=12)
     ax_e.set_ylabel(r"$\mathcal{E}$ (km$^2$/s$^2$)", fontsize=12)
-    ax_e.set_title(r"Energy vs. Time (Lowest $\ell$)", fontsize=14)
-    ax_e.legend(fontsize=10)
+    ax_e.set_title(rf"Energy vs. Time ({label_descriptor} $\ell$)", fontsize=14)
+    ax_e.legend(fontsize=9)
     ax_e.grid(True)
 
     # 3) % deviation from average energy
@@ -3286,11 +3301,11 @@ def plot_lowestL_trajectories_3panel(input_file="lowest_l_trajectories.dat", out
         # average of that particle's energy over time
         single_mean = np.mean(energies[:, p])
         pct_dev = (energies[:, p] - single_mean) / single_mean * 100.0
-        ax_dev.plot(time, pct_dev, label=f"P{p+1}")
+        ax_dev.plot(time, pct_dev, label=f"P{p+1} ($\\ell_0$={initial_L_values[p]:.3f})")
     ax_dev.set_xlabel(r"$t$ (Myr)", fontsize=12)
     ax_dev.set_ylabel(r"$\Delta\mathcal{E}/\langle\mathcal{E}\rangle$ (%)", fontsize=12)
-    ax_dev.set_title(r"Energy Deviation (Lowest $\ell$)", fontsize=14)
-    ax_dev.legend(fontsize=10)
+    ax_dev.set_title(rf"Energy Deviation ({label_descriptor} $\ell$)", fontsize=14)
+    ax_dev.legend(fontsize=9)
     ax_dev.grid(True)
 
     # Save & close figure
@@ -3631,56 +3646,46 @@ class Configuration:
         These parameters are used throughout the code for file paths,
         plot labels, and determining output filenames.
         """
-        parts = self.suffix.strip('_').split('_')
-
-        # Default values
-        self.npts = 30000
-        self.Ntimes = 1001
-        self.tfinal_factor = 5
-        self.file_tag = ""
-
-        if len(parts) >= 3:
-            try:
-                # The last three parts should always be npts, Ntimes, tfinal_factor
-                self.npts = int(parts[-3])
-                self.Ntimes = int(parts[-2])
-                self.tfinal_factor = int(parts[-1])
-
-                # The file_tag is everything before the last three parts
-                if len(parts) > 3:
-                    # Join any remaining parts as the file_tag
-                    self.file_tag = '_'.join(parts[:-3])
-            except (ValueError, IndexError):
-                # Fallback if parsing fails, read from lastparams.dat
-                self.npts, self.Ntimes, self.tfinal_factor, self.file_tag = read_lastparams(return_suffix=False)
-        else:
-            # Fallback to reading from lastparams.dat
-            self.npts, self.Ntimes, self.tfinal_factor, self.file_tag = read_lastparams(return_suffix=False)
-
-        # If command-line suffix was provided, keep it as-is; otherwise use the reconstructed one
-        if not self.args.suffix:
-            # Rebuild suffix to ensure consistency
+        # First, try to read parameters from the corresponding lastparams file
+        # This is the most reliable source of truth for the parameters.
+        try:
+            self.npts, self.Ntimes, self.tfinal_factor, self.file_tag = read_lastparams(
+                user_suffix=self.suffix, return_suffix=False
+            )
+            # Reconstruct the suffix from the authoritative source to ensure consistency
             if self.file_tag:
                 self.suffix = f"_{self.file_tag}_{self.npts}_{self.Ntimes}_{self.tfinal_factor}"
             else:
                 self.suffix = f"_{self.npts}_{self.Ntimes}_{self.tfinal_factor}"
 
+            logger.info(f"Successfully loaded parameters for suffix '{self.suffix}' from its lastparams file.")
+
+        except SystemExit:
+            # Fallback to parsing the suffix string itself if lastparams<suffix>.dat doesn't exist
+            logger.warning(f"Could not find lastparams file for suffix '{self.suffix}'. Falling back to parsing suffix string.")
+            parts = self.suffix.strip('_').rsplit('_', 3)
+
+            try:
+                if len(parts) == 4: # Format: _tag_npts_ntimes_tfinal
+                    self.file_tag, npts_str, ntimes_str, tfinal_str = parts
+                elif len(parts) == 3: # Format: _npts_ntimes_tfinal
+                    self.file_tag = ""
+                    npts_str, ntimes_str, tfinal_str = parts
+                else:
+                    raise ValueError("Suffix does not match expected format.")
+
+                self.npts = int(npts_str)
+                self.Ntimes = int(ntimes_str)
+                self.tfinal_factor = int(tfinal_str)
+                logger.info(f"Parsed parameters from suffix string: npts={self.npts}, tag='{self.file_tag}'")
+            except (ValueError, IndexError):
+                print(f"Error: Suffix '{self.suffix}' is malformed and its lastparams file was not found.")
+                sys.exit(1)
+
     def setup_file_paths(self):
         """
         Generate a dictionary mapping file types to their full file paths.
-
-        Returns
-        -------
-        dict
-            Dictionary where keys are file type identifiers (e.g., "particles",
-            "density_profile") and values are the corresponding file paths with
-            the configured suffix.
-
-        Notes
-        -----
-        This method constructs paths for all possible data files that might be
-        used in the visualization process. The actual existence of these files
-        is checked later when they are accessed.
+        All filenames now correctly include the suffix.
         """
         return {
             "particles": f"data/particles{self.suffix}.dat",
@@ -3700,7 +3705,9 @@ class Configuration:
             "hist_init": f"data/2d_hist_initial{self.suffix}.dat",
             "hist_final": f"data/2d_hist_final{self.suffix}.dat",
             "lowest_l_trajectories": f"data/lowest_l_trajectories{self.suffix}.dat",
-            "debug_energy_compare": f"data/debug_energy_compare{self.suffix}.dat"
+            "debug_energy_compare": f"data/debug_energy_compare{self.suffix}.dat",
+            "total_energy_vs_time": f"data/total_energy_vs_time{self.suffix}.dat",
+            "lowest_radius_ids": f"data/lowest_radius_ids{self.suffix}.dat" # Added for energy plots
         }
 
     def only_specific_visualizations(self):
@@ -3744,6 +3751,136 @@ class Configuration:
 
         return (self.args.animations or self.args.energy_plots or
                 (not only_flags_active and (not self.args.no_animations or not self.args.no_energy_plots)))
+
+def plot_total_energy_diagnostics(input_file, output_file="results/total_energy_diagnostics.png"):
+    """
+    Create a three-panel diagnostic plot for total system energy conservation.
+    
+    Panel 1: Absolute values of KE, PE, and Total Energy vs time
+    Panel 2: Percent change from initial values for all three quantities (auto-scaled)
+    Panel 3: Percent change of total energy only (zoomed in for detail)
+    
+    Parameters
+    ----------
+    input_file : str
+        Path to the total_energy_vs_time binary file from nsphere
+    output_file : str
+        Path to save the output plot (PNG format)
+    
+    Returns
+    -------
+    str or None
+        Path to the saved plot file, or None if plotting failed
+    """
+    import struct
+    
+    if not os.path.exists(input_file):
+        logger.warning(f"Total energy file {input_file} does not exist")
+        return None
+    
+    try:
+        # Read the binary file
+        with open(input_file, 'rb') as f:
+            data = f.read()
+        
+        # The file is pure binary - fprintf_bin ignores the header string
+        # because it has no format specifiers (%f, %g, etc.)
+        # Data starts at byte 0: 5 floats per row (time, KE, PE, total_E, frac_change)
+        
+        # Parse binary data
+        num_floats = len(data) // 4
+        if num_floats % 5 != 0:
+            logger.warning(f"Data size mismatch in {input_file}: {num_floats} floats, expected multiple of 5")
+            # Try to proceed with what we have
+            num_floats = (num_floats // 5) * 5
+        
+        values = struct.unpack(f'{num_floats}f', data[:num_floats*4])
+        
+        # Reshape into rows
+        nrows = num_floats // 5
+        if nrows == 0:
+            logger.warning(f"No valid data rows in {input_file}")
+            return None
+        
+        # Extract columns
+        time = np.array([values[i*5] for i in range(nrows)])
+        total_ke = np.array([values[i*5+1] for i in range(nrows)])
+        total_pe = np.array([values[i*5+2] for i in range(nrows)])
+        total_e = np.array([values[i*5+3] for i in range(nrows)])
+        
+        # Calculate mean values for percent change calculation
+        ke_mean = np.mean(total_ke)
+        pe_mean = np.mean(total_pe)
+        e_mean = np.mean(total_e)
+        
+        # Calculate percent changes from mean
+        ke_percent = 100.0 * (total_ke - ke_mean) / np.abs(ke_mean) if ke_mean != 0 else np.zeros_like(total_ke)
+        pe_percent = 100.0 * (total_pe - pe_mean) / np.abs(pe_mean) if pe_mean != 0 else np.zeros_like(total_pe)
+        e_percent = 100.0 * (total_e - e_mean) / np.abs(e_mean) if e_mean != 0 else np.zeros_like(total_e)
+        
+        # Create the three-panel figure
+        fig, axes = plt.subplots(3, 1, figsize=(10, 12))
+        
+        # Panel 1: True energy values (not absolute)
+        ax1 = axes[0]
+        ax1.plot(time, total_ke, 'r-', linewidth=2, label='Kinetic Energy', alpha=0.8)
+        ax1.plot(time, total_pe, 'b-', linewidth=2, label='Potential Energy', alpha=0.8)
+        ax1.plot(time, total_e, 'k-', linewidth=2.5, label='Total Energy')
+        
+        ax1.set_xlabel('Time (Myr)', fontsize=12)
+        ax1.set_ylabel('Energy (code units)', fontsize=12)
+        ax1.set_title('System Energy Evolution', fontsize=14, fontweight='bold')
+        ax1.legend(loc='best', fontsize=10)
+        ax1.grid(True, alpha=0.3, linestyle='--')
+        ax1.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+        
+        # Panel 2: Percent change of all quantities from mean (auto-scaled)
+        ax2 = axes[1]
+        ax2.plot(time, ke_percent, 'r-', linewidth=2, label='KE % from mean', alpha=0.8)
+        ax2.plot(time, pe_percent, 'b-', linewidth=2, label='PE % from mean', alpha=0.8)
+        ax2.plot(time, e_percent, 'k-', linewidth=2.5, label='Total E % from mean')
+        
+        ax2.set_xlabel('Time (Myr)', fontsize=12)
+        ax2.set_ylabel('% Change from Mean', fontsize=12)
+        ax2.set_title('Relative Energy Changes from Mean', fontsize=14, fontweight='bold')
+        ax2.legend(loc='best', fontsize=10)
+        ax2.grid(True, alpha=0.3, linestyle='--')
+        ax2.axhline(y=0, color='gray', linestyle='-', alpha=0.5)
+        
+        # Panel 3: Total energy percent change from mean (zoomed)
+        ax3 = axes[2]
+        ax3.plot(time, e_percent, 'k-', linewidth=2.5, label='Total Energy % from mean')
+        
+        ax3.set_xlabel('Time (Myr)', fontsize=12)
+        ax3.set_ylabel('% Change in Total Energy from Mean', fontsize=12)
+        ax3.set_title('Total Energy Conservation Detail', fontsize=14, fontweight='bold')
+        ax3.grid(True, alpha=0.3, linestyle='--')
+        ax3.axhline(y=0, color='black', linestyle='-', alpha=0.5)
+        
+        # Set y-axis limits for better visibility
+        max_e_var = np.max(np.abs(e_percent))
+        y_margin = max(0.001, max_e_var * 1.2)  # At least 0.001% margin
+        ax3.set_ylim(-y_margin, y_margin)
+        
+        ax3.legend(loc='best', fontsize=9)
+        
+        # Overall figure adjustments
+        fig.suptitle('Total System Energy Diagnostics', 
+                    fontsize=16, fontweight='bold', y=0.995)
+        plt.tight_layout(rect=[0, 0, 1, 0.99])
+        
+        # Save the plot
+        plt.savefig(output_file, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+        
+        logger.info(f"Total energy diagnostics plot saved to {output_file}")
+        return output_file
+        
+    except Exception as e:
+        logger.error(f"Error creating total energy diagnostics plot: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 def parse_arguments():
     """
@@ -4098,28 +4235,48 @@ def process_trajectory_plots(file_paths):
     else:
         logger.warning(f"Single trajectory file {file_paths['single_trajectory']} not found, skipping.")
 
-    # Lowest L 3-panel - check and load
-    logger.info(f"Loading lowest L trajectories data from {file_paths['lowest_l_trajectories']}")
+    # Lowest L or Chosen L 3-panel - check for both, prioritize chosen_l
+    chosen_l_file = f"data/chosen_l_trajectories{suffix}.dat"
+    lowest_l_file = file_paths["lowest_l_trajectories"]
+
+    actual_input_file = None
+    file_prefix_for_plot = "lowestl"
+
+    if os.path.exists(chosen_l_file):
+        actual_input_file = chosen_l_file
+        file_prefix_for_plot = "chosenl"
+        logger.info(f"Loading chosen L trajectories data from {chosen_l_file}")
+    elif os.path.exists(lowest_l_file):
+        actual_input_file = lowest_l_file
+        file_prefix_for_plot = "lowestl"
+        logger.info(f"Loading lowest L trajectories data from {lowest_l_file}")
+
     update_combined_progress("trajectory_data_loading", "loading_lowest_l_trajectories")
-    if os.path.exists(file_paths["lowest_l_trajectories"]):
-        lowest_l_output = f"results/lowestL_3panel{suffix}.png"
-        prepared_plots.append(("lowest_l", file_paths["lowest_l_trajectories"], lowest_l_output))
+
+    if actual_input_file:
+        output_filename = f"results/{file_prefix_for_plot}_3panel{suffix}.png"
+        prepared_plots.append(("lowest_l", actual_input_file, output_filename, file_prefix_for_plot))
     else:
-        logger.warning(f"Lowest L trajectories file {file_paths['lowest_l_trajectories']} not found, skipping.")
+        logger.warning(f"Neither chosen_l nor lowest_l trajectories file found, skipping.")
 
     # Energy and angular momentum data - check and load
     logger.info(f"Loading energy and angular momentum data from {file_paths['energy_and_angular_momentum']}")
     update_combined_progress("trajectory_data_loading", "loading_energy_angular_momentum")
 
     # Generate trajectory plots using the combined progress tracker
-    for plot_type, input_file, output_file in prepared_plots:
+    for item in prepared_plots:
+        plot_type = item[0]
+        input_file = item[1]
+        output_file = item[2]
+        prefix = item[3] if len(item) > 3 else None
+
         try:
             if plot_type == "trajectories":
                 plot_trajectories(input_file, output_file)
             elif plot_type == "single":
                 plot_single_trajectory(input_file, output_file)
             elif plot_type == "lowest_l":
-                plot_lowestL_trajectories_3panel(input_file, output_file)
+                plot_lowestL_trajectories_3panel(input_file, output_file, file_prefix=prefix)
 
             # Update the combined progress tracker (shared with energy plots)
             update_combined_progress("trajectory_plots", output_file)
@@ -5154,13 +5311,11 @@ def process_sorted_energy_file(task_data):
     fname, local_suffix = task_data
     global ncol_Rank_Mass_Rad_VRad_unsorted
 
-    # Extract the timestep from the filename
-    m = re.search(r'Rank_Mass_Rad_VRad_unsorted_t(\d+)' + re.escape(local_suffix) + r'\.dat$', fname)
-    if not m:
+    # Use the suffix-aware helper
+    snap = _extract_Rank_snapnum(fname, local_suffix)
+    if snap == 999999999:
         logger.warning(f"Regex failed for sorted energy file {fname} with suffix '{local_suffix}'")
         return None
-
-    snap = int(m.group(1))
 
     # Reload tracked IDs inside the worker
     lowest_radius_ids_file = f"data/lowest_radius_ids{local_suffix}.dat"
@@ -5200,11 +5355,10 @@ def phase_space_process_rank_file(fname):
         (snapshot_number, data) if successful, otherwise None.
         'data' is a structured numpy array containing the file contents.
     """
-    # Extract the timestep from the filename.
-    mo = re.search(r'Rank_Mass_Rad_VRad_sorted_t(\d+)' + re.escape(suffix) + r'\.dat$', fname)
-    if not mo:
+    # Use the suffix-aware helper
+    snap = _extract_Rank_snapnum(fname, suffix)
+    if snap == 999999999:
         return None
-    snap = int(mo.group(1))
 
     # Constants for the expected number of columns
     ncol_Rank_Mass_Rad_VRad_sorted = 8
@@ -5238,13 +5392,11 @@ def process_unsorted_rank_file(task_data_with_suffix):
     # Unpack arguments
     fname, project_root_path, local_suffix = task_data_with_suffix
     
-    # Extract the timestep from the filename
-    mo = re.search(r'Rank_Mass_Rad_VRad_unsorted_t(\d+)' + re.escape(local_suffix) + r'\.dat$', fname)
-    if not mo:
+    # Use the suffix-aware helper
+    snap = _extract_Rank_snapnum(fname, local_suffix)
+    if snap == 999999999:
         logger.warning(f"Regex failed for unsorted file {fname} with suffix '{local_suffix}'")
         return None
-
-    snap = int(mo.group(1))
 
     # Constants for the expected number of columns
     ncol = ncol_Rank_Mass_Rad_VRad_unsorted # Should be 7
@@ -5294,12 +5446,10 @@ def process_sorted_energy(fname):
     tuple or None
         (snapshot_number, energy_values) if successful or None if there was an error.
     """
-    # Extract the timestep from the filename
-    mo = re.search(r'Rank_Mass_Rad_VRad_sorted_t(\d+)' + re.escape(suffix) + r'\.dat$', fname)
-    if not mo:
+    # Use the suffix-aware helper
+    snap = _extract_Rank_snapnum(fname, suffix)
+    if snap == 999999999:
         return None
-
-    snap = int(mo.group(1))
 
     # Load the particle IDs to track (particles with lowest initial radius)
     lowest_radius_ids_file = f"data/lowest_radius_ids{suffix}.dat"
@@ -5346,11 +5496,10 @@ def process_rank_file(fname):
     tuple or None
         (snapshot_number, decimated_data) if successful or None if there was an error.
     """
-    # Extract the timestep from the filename
-    mo = re.search(r'Rank_Mass_Rad_VRad_sorted_t(\d+)' + re.escape(suffix) + r'\.dat$', fname)
-    if not mo:
+    # Use the suffix-aware helper
+    snap = _extract_Rank_snapnum(fname, suffix)
+    if snap == 999999999:
         return None
-    snap = int(mo.group(1))
 
     # Read the file using the safe loader
     data = safe_load_and_filter_bin(fname, ncol_Rank_Mass_Rad_VRad_sorted,
@@ -5937,22 +6086,20 @@ def generate_all_1D_animations(suffix, duration, config=None):
 def _extract_Rank_snapnum(fname, suffix):
     """
     Extract snapshot number from a rank file name.
-
-    Parameters
-    ----------
-    fname : str
-        The filename.
-    suffix : str
-        The suffix to remove from the filename.
-
-    Returns
-    -------
-    int
-        The snapshot number.
+    Now handles both sorted and unsorted file patterns.
     """
-    mo = re.search(r'Rank_Mass_Rad_VRad_sorted_t(\d+)' + re.escape(suffix) + r'\.dat$', fname)
+    # Try sorted pattern first
+    pattern_sorted = r'Rank_Mass_Rad_VRad_sorted_t(\d+)' + re.escape(suffix) + r'\.dat$'
+    mo = re.search(pattern_sorted, fname)
     if mo:
         return int(mo.group(1))
+
+    # Fallback to unsorted pattern
+    pattern_unsorted = r'Rank_Mass_Rad_VRad_unsorted_t(\d+)' + re.escape(suffix) + r'\.dat$'
+    mo = re.search(pattern_unsorted, fname)
+    if mo:
+        return int(mo.group(1))
+
     return 999999999
 
 def calculate_reasonable_vmax(H):
@@ -6761,7 +6908,9 @@ def process_rank_files(suffix, start_snap, end_snap, step_snap):
     unsorted_pattern = f"data/Rank_Mass_Rad_VRad_unsorted_t*{suffix}.dat"
     unsorted_files = glob.glob(unsorted_pattern)
 
-    # Filter to keep ONLY files that match the exact pattern, same as with the sorted files
+    # Filter unsorted files as well
+    correct_unsorted_pattern = re.compile(r'data/Rank_Mass_Rad_VRad_unsorted_t\d+' + re.escape(suffix) + r'\.dat$')
+    unsorted_files = [f for f in unsorted_files if correct_unsorted_pattern.match(f)]
     correct_unsorted_pattern = re.compile(r'data/Rank_Mass_Rad_VRad_unsorted_t\d+' + re.escape(suffix) + r'\.dat$')
     unsorted_files = [f for f in unsorted_files if correct_unsorted_pattern.match(f)]
     logger.info(f"Found {len(all_rank_files)} rank sorted snapshot files and {len(unsorted_files)} unsorted snapshot files.")
@@ -8270,6 +8419,14 @@ def generate_all_energy_plots(config, file_paths, unsorted_energy_data):
 
         # Generate the sorted energy plot
         sorted_output = generate_sorted_energy_plot(config.suffix)
+        
+        # Generate total energy diagnostics plot if file exists
+        total_energy_file = file_paths.get("total_energy_vs_time", "")
+        if os.path.exists(total_energy_file):
+            output_file = f"results/total_energy_diagnostics{config.suffix}.png"
+            total_energy_output = plot_total_energy_diagnostics(total_energy_file, output_file)
+            if total_energy_output:
+                logger.info(f"Total energy diagnostics plot saved to {total_energy_output}")
 
         # Calculate final timing statistics
         elapsed = time.time() - energy_plot_start_time
@@ -8403,13 +8560,13 @@ def main():
         # Skip if explicitly told not to generate phase space plots
         if not config.args.no_phase_space:
             print_header("Generating Phase Space Initial Histogram")
-            generate_initial_phase_histogram(config.suffix, config)
+            generate_initial_phase_histogram(config.suffix, config=config)
             print_footer("Initial phase space histogram created successfully.")
 
             # If phase_space_only is true, also generate the animation right away
             if config.args.phase_space:
                 print_header("Generating Phase Space Animation")
-                generate_phase_space_animation(config, fps=config.fps) # Pass full config
+                generate_phase_space_animation(config, fps=config.fps)
                 # Add separator and completion message for phase space animation
                 sys.stdout.write(get_separator_line(char='-') + "\n")
                 print_status("Phase space animation generated successfully.")
@@ -8421,7 +8578,7 @@ def main():
         # Skip if explicitly told not to generate phase comparison
         if not config.args.no_phase_comparison:
             print_header("Generating Phase Space Comparison")
-            generate_comparison_plot(config.suffix, config)
+            generate_comparison_plot(config.suffix, config=config)
             print_footer("Phase space comparison created successfully.")
             
     # --- Generate 1D Variable Distributions ---

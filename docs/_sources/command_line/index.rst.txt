@@ -63,12 +63,49 @@ Basic Control & Execution
    all
      : Saves all possible outputs, equivalent to enabling `debug-energy`.
 
-.. option:: --restart
+.. option:: --restart [force]
 
    Enable restart mode. Looks for existing output data products (primarily
    ``all_particle_data<suffix>.dat`` and snapshot files) to determine where
    to resume processing. If complete data is found for the simulation phase,
-   it may be skipped entirely. Incompatible with ``--readinit`` and ``--writeinit``.
+   it may be skipped entirely.
+
+   With 'force': regenerate ALL snapshots even if they exist.
+
+   Incompatible with ``--readinit`` and ``--writeinit``.
+   [Default: Off]
+
+.. option:: --sim-restart [check]
+
+   Restart incomplete simulation from last checkpoint.
+   Checks for incomplete ``all_particle_data`` files and continues from
+   the last complete snapshot. Creates backups and truncates files to
+   ensure consistency.
+
+   With 'check': only report status without restarting.
+
+   [Default: Off]
+
+.. option:: --restart-file <file>
+
+   Specify explicit file path for restart operations (debugging).
+   Overrides automatic file detection.
+   [Default: Off]
+
+.. option:: --sim-extend
+
+   Extend a completed simulation to new Ntimes/tfinal values.
+   Copies source file and continues evolution. Maintains constant
+   physical timestep dt and write frequency dtwrite.
+
+   Requires ``--extend-file`` to specify source file.
+   [Default: Off]
+
+.. option:: --extend-file <file>
+
+   Source ``all_particle_data`` file to extend (used with ``--sim-extend``).
+   File will be copied to new name based on target parameters.
+   Filename must follow NSphere format: ``prefix_N_Ntimes_tfinal.dat``
    [Default: Off]
 
 Simulation Setup
@@ -97,11 +134,24 @@ Simulation Setup
    Number of simulation timesteps between each major data write/snapshot interval.
    [Default: 100]
 
+.. option:: --snapshot-buffer <int>
+
+   Number of snapshots to buffer in memory before writing to disk.
+   Controls memory usage vs I/O frequency tradeoff.
+   [Default: 100]
+
 .. option:: --tfinal <int>
 
    Sets the total simulation duration as a multiple of the characteristic
    dynamical time (tdyn). Duration = ``<int>`` * tdyn.
    [Default: 5]
+
+.. option:: --lvals-target <float>
+
+   Select particles with angular momentum values closest to the specified target,
+   rather than selecting the lowest L particles (default behavior).
+   Useful for studying specific orbital families.
+   [Default: Off - selects lowest L particles]
 
 .. option:: --ftidal <float>
 
@@ -186,13 +236,17 @@ Numerical Methods
    Selects the particle sorting algorithm. [Default: 1]
 
    1
-     : Selects Parallel Quadsort (Default).
+     : Parallel Quadsort (Default).
    2
-     : Selects Sequential Quadsort.
+     : Sequential Quadsort.
    3
-     : Selects Parallel Insertion Sort.
+     : Parallel Insertion Sort.
    4
-     : Selects Sequential Insertion Sort.
+     : Sequential Insertion Sort.
+   5
+     : Parallel Radix Sort - High performance for large arrays.
+   6
+     : Adaptive sort - Benchmarks algorithms every 1000 sorts and switches to fastest.
 
 Halo Profile Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -206,17 +260,19 @@ Halo Profile Configuration
 .. option:: --profile <type>
 
    Select the halo density profile type for initial conditions.
-   
+
    - ``nfw``: NFW profile with exponential cutoff
    - ``cored``: Cored Plummer-like profile
-   
+   - ``hernquist``: Hernquist profile (supports constant-β and OM anisotropy)
+
    [Default: nfw]
 
 .. option:: --scale-radius <float>
 
    Scale radius in kpc for the selected profile. For NFW profiles this is
-   the traditional scale radius rs; for cored profiles this is the core radius.
-   [Default: 1.18]
+   the traditional scale radius rs; for cored profiles this is the core radius;
+   for Hernquist profiles this is the scale radius a.
+   [Default: 23]
 
 .. option:: --cutoff-factor <float>
 
@@ -230,14 +286,53 @@ Halo Profile Configuration
    exponential cutoff at large radii. Only used for NFW profiles.
    [Default: 19.0]
 
+Anisotropy Models
+~~~~~~~~~~~~~~~~~
+
+.. option:: --aniso-beta <float>
+
+   Constant anisotropy parameter β for Hernquist profile.
+   Controls velocity anisotropy: β = 0 (isotropic), β > 0 (radially biased),
+   β < 0 (tangentially biased).
+
+   Valid range: -1 ≤ β ≤ 0.5
+
+   Only compatible with ``--profile hernquist``.
+   Cannot be used with ``--aniso-factor`` or ``--aniso-betascale``.
+   [Default: 0.0]
+
+.. option:: --aniso-factor <float>
+
+   Osipkov-Merritt anisotropy radius as multiple of scale radius.
+   Sets r_a = factor × r_scale.
+
+   Enables OM model with β(r) = r²/(r² + r_a²), which transitions from
+   isotropic (β=0) at r=0 to radially biased (β→1) at large radii.
+
+   Compatible with all profiles (NFW, Cored, Hernquist).
+   Cannot be used with ``--aniso-betascale``.
+   [Default: Off]
+
+.. option:: --aniso-betascale <float>
+
+   Alternative to ``--aniso-factor``: specify β at the scale radius directly.
+   Calculates r_a/r_s = √(1/β_s - 1) automatically.
+
+   Valid range: (0, 1)
+
+   Cannot be used with ``--aniso-factor``.
+   [Default: Off]
+
 SIDM Physics
 ~~~~~~~~~~~~
 
 .. option:: --sidm
 
    Enable Self-Interacting Dark Matter (SIDM) scattering physics.
-   Activates particle-particle scattering with velocity-dependent cross-section.
+   Activates particle-particle scattering with cross-section controlled by ``--sidm-kappa``.
    [Default: Off]
+
+.. option:: --sidm-seed <int>
 
    Set seed specifically for SIDM scattering calculations.
    Highest priority - overrides both ``--master-seed`` and ``--load-seeds``.

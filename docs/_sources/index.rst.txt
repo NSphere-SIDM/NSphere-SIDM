@@ -21,6 +21,42 @@ The simulation evolves a system of 𝑁 particles, often representing concentric
 
 This approach significantly reduces computational cost compared to traditional ``𝑁²`` 𝑁-body methods and mitigates issues like two-body relaxation effects, making it suitable for high-precision studies of spherical systems on standard hardware.
 
+For further details on the gravitational algorithm, see `Kamionkowski & Sigurdson (2025a) <https://arxiv.org/abs/2504.13996>`_. For complete details of the SIDM implementation, see `Kamionkowski, Sigurdson & Slone (2025) <https://arxiv.org/abs/2506.04334>`_. For the implementation and effects of anisotropic velocity distributions, see `Kamionkowski & Sigurdson (2025b) <https://arxiv.org/abs/PLACEHOLDER>`_.
+
+Key Capabilities
+================
+
+NSphere provides several advanced features for studying spherical dark matter systems:
+
+**Profile Support:** Initial conditions can be generated for NFW (with power-law cutoff), Cored Plummer-like, or Hernquist density profiles. Each profile supports both isotropic and anisotropic velocity distributions.
+
+**Anisotropy Models:** Velocity anisotropy can be configured using constant-β models (Hernquist only) or the Osipkov-Merritt model with radially-varying β(r) = r²/(r² + r_a²) (compatible with all profiles). Note that the ``--writeinit`` flag outputs initial conditions that, with external format conversion and augmentation by isotropic polar/azimuthal angles, may be used in other N-body codes.
+
+**SIDM Physics:** Self-interacting dark matter scattering is implemented via direct Monte Carlo with configurable cross-section (σ/m). The parallel implementation uses graph-coloring to eliminate race conditions while maintaining high efficiency. SIDM simulations demonstrate core formation and eventual gravothermal collapse.
+
+**Restart & Extension:** Interrupted simulations can be resumed with ``--sim-restart``, or completed simulations extended with ``--sim-extend``, and will be bit-for-bit identical to simulations run normally for the desired end time.
+
+**Reproducibility:** Comprehensive seed management (``--master-seed``, ``--init-cond-seed``, ``--sidm-seed``, ``--load-seeds``) enables exact reproduction of stochastic processes. All seeds are saved automatically for each run.
+
+Getting Started
+===============
+
+Run a basic simulation and generate plots:
+
+.. code-block:: bash
+
+   ./nsphere --nparticles 10000 --tfinal 5
+   ./nsphere_plot
+
+For SIDM physics with core formation:
+
+.. code-block:: bash
+
+   ./nsphere --nparticles 10000 --tfinal 20 --sidm --sidm-kappa 50
+   ./nsphere_animations
+
+See the :doc:`command_line/index` section for all available options.
+
 *(For more technical details, see the sections below)*
 
 .. toctree::

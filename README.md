@@ -2,82 +2,42 @@
 
 **Self-Interacting Dark Matter (SIDM) fork of [NSphere](https://github.com/kris-sigurdson/NSphere)**
 
-Implements SIDM scattering physics and many general enhancements.  
+Implements SIDM scattering physics, anisotropic velocity distributions, and many other enhancements.  
 For a comprehensive list of changes see the [change log](CHANGELOG.md).
 
-<div align="left">
-  <img src="img/NSphere.png" alt="NSphere logo" width="60%">
-</div>
-
-[![docs](https://github.com/NSphere-SIDM/NSphere-SIDM/actions/workflows/docs-status.yml/badge.svg)](https://nsphere-sidm.github.io/NSphere-SIDM/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![arXiv](https://img.shields.io/badge/arXiv-2504.13996-b31b1b.svg)](https://arxiv.org/abs/2504.13996)
-[![arXiv](https://img.shields.io/badge/arXiv-2506.04334-b31b1b.svg)](https://arxiv.org/abs/2506.04334)
-
-Please see **Kamionkowski & Sigurdson (2025), [arXiv:2504.13996](https://arxiv.org/abs/2504.13996)** if you use **NSphere** (citation details below).  
-The SIDM physics implementation is described in **Kamionkowski, Sigurdson & Slone (2025), [arXiv:2506.04334](https://arxiv.org/abs/2506.04334)**.
-
----
+<table width="100%">
+<tr>
+<td width="30.3%">
+<img src="img/darkhalos1_left.png" width="100%" title="Credit: NASA/CXC/UCI/A.Lewis et al.">
+</td>
+<td width="39.4%" align="center">
+<img src="img/NSphere.png" alt="NSphere logo" width="100%">
+</td>
+<td width="30.3%">
+<img src="img/darkhalos2_right.png" width="100%" title="Credit: The Illustris Collaboration">
+</td>
+</tr>
+</table>
 
 <div align="center">
 
-## Numerical evolution of self-gravitating halos of self-interacting dark matter
-
-Marc Kamionkowski,<sup>1</sup> Kris Sigurdson,<sup>2</sup> and Oren Slone<sup>3</sup>
-
-<sub><i><sup>1</sup>William H. Miller III Department of Physics & Astronomy, Johns Hopkins University, 3400 N. Charles St., Baltimore, MD 21218, USA  
-<sup>2</sup>Department of Physics and Astronomy, University of British Columbia, Vancouver, BC V6T 1Z1, Canada  
-<sup>3</sup>Raymond and Beverly Sackler School of Physics and Astronomy, Tel Aviv University, Tel-Aviv 69978, Israel</i></sub>
+[![docs](https://github.com/NSphere-SIDM/NSphere-SIDM/actions/workflows/docs-status.yml/badge.svg)](https://nsphere-sidm.github.io/NSphere-SIDM/) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE) [![arXiv](https://img.shields.io/badge/arXiv-2506.04334-b31b1b.svg)](https://arxiv.org/abs/2506.04334) [![arXiv](https://img.shields.io/badge/arXiv-2504.13996-b31b1b.svg)](https://arxiv.org/abs/2504.13996) [![arXiv](https://img.shields.io/badge/arXiv-2510.23705-b31b1b.svg)](https://arxiv.org/abs/2510.23705)
 
 </div>
 
 <div align="justify">
-&nbsp;&nbsp;&nbsp;&nbsp;We discuss a modification of a recently developed numerical scheme for evolving spherically symmetric self-gravitating systems to include the effects of self-interacting dark matter. The approach is far more efficient than traditional N-body simulations and cross sections with different dependencies on velocity and scattering-angle are easily accommodated. To demonstrate, we provide results of a simulation, which runs quickly on a personal computer, that shows the expected initial flattening of the inner region of an NFW halo as well as the later gravothermal collapse instability that leads to a dense core at the galactic center. We note that this approach can also be used, with some augmentation, to simulate the dynamics in globular clusters by modeling gravitational hard scattering as a self-interaction.
+
+Please see **Kamionkowski & Sigurdson (2025), [arXiv:2504.13996](https://arxiv.org/abs/2504.13996)** if you use **NSphere** (citation details below).
+The SIDM physics implementation is described in **Kamionkowski, Sigurdson & Slone (2025), [arXiv:2506.04334](https://arxiv.org/abs/2506.04334)**.
+Anisotropic velocity distribution support is described in **Kamionkowski & Sigurdson (2025), [arXiv:2510.23705](https://arxiv.org/abs/2510.23705)**.
+
 </div>
-
----
-
-## Key Results from SIDM Simulations
-
-<sub>Explore these results online in our [interactive notebooks](https://nsphere-sidm.github.io/NSphere-SIDM/examples/index.html).</sub>
-
-<table>
-<tr>
-<td width="50%"><img src="img/Phase_Space_Animation_SIDM.gif" alt="SIDM Phase Space Evolution" style="width:100%;"></td>
-<td width="50%"><img src="img/Phase_Space_Animation_SIDM_Core.gif" alt="SIDM Core Collapse" style="width:100%;"></td>
-</tr>
-<tr>
-<td align="justify"><sub><sup><b>SIDM Phase Space Evolution:</b> Animation showing the complete 19.6 Gyr evolution of the phase space (r, v<sub>r</sub>) distribution for 10<sup>5</sup> particles with σ/m = 50 cm²/g. The system begins with an NFW profile and evolves under both gravity and SIDM scattering. Core formation becomes evident after ~15 Gyr, followed by rapid collapse.</sup></sub></td>
-<td align="justify"><sub><sup><b>Collapse of Core Region:</b> Zoomed view of the central 0.5 kpc during the critical gravothermal collapse period from 12.4 Gyr to 16.4 Gyr. The phase space shows dramatic heating and concentration of particles as the core density rises exponentially. Color scale emphasizes high-density regions using power-law normalization.</sup></sub></td>
-</tr>
-</table>
-
-<table>
-<tr>
-<td width="50%"><img src="img/Number_Distribution_Evolution_SIDM.gif" alt="Number Distribution Evolution" style="width:100%;"></td>
-<td width="50%"><img src="img/Fig2_Particle_Count_Evolution.png" alt="Particle Count" style="width:100%;"></td>
-</tr>
-<tr>
-<td align="justify"><sub><sup><b>Particle Distribution Evolution:</b> Animation of N(r) showing particles per radial bin over 19.6 Gyr. The initial NFW cusp at r < 0.1 kpc flattens within 1 Gyr due to SIDM heat transfer. After ~15 Gyr, particles accumulate rapidly in the center as gravothermal collapse begins, forming a sharp density spike.</sup></sub></td>
-<td align="justify"><sub><sup><b>Core Particle Accumulation:</b> Time evolution of the number of particles in the innermost 0.02 kpc (blue) and 0.2 kpc (green). The number within 0.02 kpc is scaled up by 15. The number of particles quickly decreases from its initial value then slowly increases until about t=16 Gyr, with a sharper increase in the innermost regions. The decrease after 16.5 Gyr is a numerical artifact from finite time resolution.</sup></sub></td>
-</tr>
-</table>
-
-<table>
-<tr>
-<td width="50%"><img src="img/Fig1_Density_Evolution.png" alt="Density Evolution" style="width:100%;"></td>
-<td width="50%"><img src="img/Fig3_Radial_Velocity_Dispersion.png" alt="Velocity Dispersion" style="width:100%;"></td>
-</tr>
-<tr>
-<td align="justify"><sub><sup><b>Density Profile Evolution:</b> Time evolution of the inner density profile for a 1.15×10<sup>9</sup> M<sub>⊙</sub> NFW halo with scale radius r<sub>s</sub>=1.18 kpc and SIDM cross section 50 cm²/g. The initial profile (black) has an r<sup>-1</sup> power law at r≲1 kpc, which flattens by t=1 Gyr (red). Steepening from gravothermal instability appears at t≈15 Gyr (green), with further steepening at t=16.5 Gyr (blue).</sup></sub></td>
-<td align="justify"><sub><sup><b>Velocity Dispersion Evolution:</b> Time evolution of the radial velocity dispersion in the inner 0.2 kpc. In the first Gyr the initially cold population in the NFW profile is rapidly heated towards isothermality, and the dispersion then diverges as the core forms 16 Gyr later. The sharp rise after 15 Gyr indicates the onset of core collapse.</sup></sub></td>
-</tr>
-</table>
 
 ---
 
 ## Quick Navigation
 - [Key Results from SIDM Simulations](#key-results-from-sidm-simulations)
+- [Key Results from Anisotropic SIDM Simulations](#key-results-from-anisotropic-sidm-simulations)
 - [Overview](#overview)
 - [Numerical Implementation](#numerical-implementation)
 - [Core Components & Usage](#core-components--usage)
@@ -91,9 +51,92 @@ Marc Kamionkowski,<sup>1</sup> Kris Sigurdson,<sup>2</sup> and Oren Slone<sup>3<
 
 ---
 
+## Key Results from SIDM Simulations
+
+<div align="center">
+<img src="img/nsphere_sidm_paper_abstract.png" alt="SIDM Paper Abstract" style="width:80%;">
+</div>
+
+<sub>Explore these results online in our [interactive notebooks](https://nsphere-sidm.github.io/NSphere-SIDM/examples/index.html).</sub>
+
+<table>
+<tr>
+<td width="33%"><img src="img/Phase_Space_Animation_SIDM.gif" alt="SIDM Phase Space Evolution" style="width:100%;"></td>
+<td width="33%"><img src="img/Phase_Space_Animation_SIDM_Core.gif" alt="SIDM Core Collapse" style="width:100%;"></td>
+<td width="33%"><img src="img/Number_Distribution_Evolution_SIDM.gif" alt="Number Distribution Evolution" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>SIDM Phase Space Evolution:</b> Animation showing the complete 19.6 Gyr evolution of the phase space (r, v<sub>r</sub>) distribution for 10<sup>5</sup> particles with σ/m = 50 cm²/g. The system begins with an NFW profile and evolves under both gravity and SIDM scattering. Core formation becomes evident after ~15 Gyr, followed by rapid collapse.</sup></sub></td>
+<td align="justify"><sub><sup><b>Collapse of Core Region:</b> Zoomed view of the central 0.5 kpc during the critical gravothermal collapse period from 12.4 Gyr to 16.4 Gyr. The phase space shows dramatic heating and concentration of particles as the core density rises exponentially. Color scale emphasizes high-density regions using power-law normalization.</sup></sub></td>
+<td align="justify"><sub><sup><b>Particle Distribution Evolution:</b> Animation of N(r) showing particles per radial bin over 19.6 Gyr. The initial NFW cusp at r < 0.1 kpc flattens within 1 Gyr due to SIDM heat transfer. After ~15 Gyr, particles accumulate rapidly in the center as gravothermal collapse begins, forming a sharp density spike.</sup></sub></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="33%"><img src="img/Fig2_Particle_Count_Evolution.png" alt="Particle Count" style="width:100%;"></td>
+<td width="33%"><img src="img/Fig1_Density_Evolution.png" alt="Density Evolution" style="width:100%;"></td>
+<td width="33%"><img src="img/Fig3_Radial_Velocity_Dispersion.png" alt="Velocity Dispersion" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>Core Particle Accumulation:</b> Time evolution of the number of particles in the innermost 0.02 kpc (blue) and 0.2 kpc (green). The number within 0.02 kpc is scaled up by 15. The number of particles quickly decreases from its initial value then slowly increases until about t=16 Gyr, with a sharper increase in the innermost regions. The decrease after 16.5 Gyr is a numerical artifact from finite time resolution.</sup></sub></td>
+<td align="justify"><sub><sup><b>Density Profile Evolution:</b> Time evolution of the inner density profile for a 1.15×10<sup>9</sup> M<sub>⊙</sub> NFW halo with scale radius r<sub>s</sub>=1.18 kpc and SIDM cross section 50 cm²/g. The initial profile (black) has an r<sup>-1</sup> power law at r≲1 kpc, which flattens by t=1 Gyr (red). Steepening from gravothermal instability appears at t≈15 Gyr (green), with further steepening at t=16.5 Gyr (blue).</sup></sub></td>
+<td align="justify"><sub><sup><b>Velocity Dispersion Evolution:</b> Time evolution of the radial velocity dispersion in the inner 0.2 kpc. In the first Gyr the initially cold population in the NFW profile is rapidly heated towards isothermality, and the dispersion then diverges as the core forms 16 Gyr later. The sharp rise after 15 Gyr indicates the onset of core collapse.</sup></sub></td>
+</tr>
+</table>
+
+---
+
+## Key Results from Anisotropic SIDM Simulations
+
+<div align="center">
+<img src="img/nsphere_anisotropy_paper_abstract.png" alt="Anisotropy Paper Abstract" style="width:80%;">
+</div>
+
+<sub>Explore these results online in our [Example 3 Notebook](https://nsphere-sidm.github.io/NSphere-SIDM/examples/notebooks/nsphere_notebook_example3.html) which reproduces all 7 paper figures.</sub>
+
+<table>
+<tr>
+<td width="100%"><img src="img/aniso_fig1_phase_space.png" alt="Initial Phase Space for Different β" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>Initial Phase-Space Density for Different β Values:</b> Three-panel comparison showing initial distributions in (r, v_r) space for constant-β anisotropy models. Radial velocity spread increases systematically from β=-1/2 (tangential orbits, left) through β=0 (isotropic, center) to β=1/2 (radial orbits, right), demonstrating how anisotropy parameter controls orbital structure while preserving the same Hernquist density profile.</sup></sub></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="33%"><img src="img/aniso_fig2a_particle_count.png" alt="Particle Count Evolution" style="width:100%;"></td>
+<td width="33%"><img src="img/aniso_fig2b_dispersion.png" alt="Velocity Dispersion Evolution" style="width:100%;"></td>
+<td width="33%"><img src="img/aniso_fig2c_beta_evolution.png" alt="β Anisotropy Evolution" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>Particle Count at r<0.02 kpc:</b> Time evolution showing collapse onset for 5 constant-β models. Particle accumulation varies by factor of ~2 across anisotropy range, with tangential models (β=-1/2, purple) collapsing faster than radial models (β=1/2, red). All models show characteristic accumulation followed by post-collapse decrease.</sup></sub></td>
+<td align="justify"><sub><sup><b>Central Velocity Dispersion:</b> Evolution of σ² at r<0.2 kpc showing thermalization (first Gyr) then divergence at collapse. Initial rapid heating drives all models toward thermal equilibrium. Peak values vary systematically with β, demonstrating anisotropy's influence on core heating during gravothermal collapse.</sup></sub></td>
+<td align="justify"><sub><sup><b>Anisotropy Parameter Evolution:</b> Time evolution of β(r<0.2 kpc) for three models (β=-1/2, 0, 1/2). Initial anisotropy preserved at t=0, then rapid SIDM-driven thermalization toward isotropy (β→0) within first Gyr. Demonstrates self-interactions' powerful isotropizing effect regardless of initial orbital distribution.</sup></sub></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="33%"><img src="img/aniso_fig3a_om_dispersion.png" alt="OM Velocity Dispersion" style="width:100%;"></td>
+<td width="33%"><img src="img/aniso_fig3b_om_collapse.png" alt="OM Collapse Time vs β(r_s)" style="width:100%;"></td>
+<td width="33%"><img src="img/aniso_fig4_theoretical.png" alt="Theoretical Velocity Dispersion Profiles" style="width:100%;"></td>
+</tr>
+<tr>
+<td align="justify"><sub><sup><b>Osipkov-Merritt Velocity Dispersion Evolution:</b> Central σ² evolution for 11 OM models with β(r_s) ranging from 0.05 to 0.80. Collapse timing varies non-monotonically spanning 4-12 Gyr. Models with intermediate anisotropy (β(r_s)~0.2-0.3, yellow-green curves) exhibit longest collapse times, while both low and high anisotropy models collapse earlier.</sup></sub></td>
+<td align="justify"><sub><sup><b>Collapse Time vs β(r_s):</b> Non-monotonic relationship between OM characteristic anisotropy β(r_s) and gravothermal collapse time (measured at 0.1% threshold). Peak collapse time ~12 Gyr at β(r_s)~0.25, decreasing to ~4.5 Gyr (isotropic) and ~7 Gyr (β(r_s)=0.8). Demonstrates complex interplay between radially-varying velocity anisotropy and core collapse dynamics.</sup></sub></td>
+<td align="justify"><sub><sup><b>Initial Velocity Dispersion Profiles:</b> Theoretical σ²(r) calculated from distribution functions via Jeans equation. Blue solid curves show 5 constant-β models (-0.5 to 0.5), red dashed curves show 4 OM models (r_a = 0.33, 1.0, 3.3, 10.0 × r_s). Demonstrates how different anisotropy models produce distinct global velocity-dispersion profiles despite identical density distributions. Log-log scale reveals power-law behavior at small and large radii.</sup></sub></td>
+</tr>
+</table>
+
+---
+
 ## Overview
 
 NSphere simulates the evolution of spherical self-gravitating systems, primarily targeting collisionless dark matter halos in astrophysics. It leverages the inherent spherical symmetry to simplify the complex 𝑁-body problem. By reducing the six-dimensional phase space (position and velocity) to three dimensions (radius `r`, radial velocity `𝑣ᵣ`, and angular momentum `ℓ` or velocity angle), the computational cost is significantly lowered. The core principle is self-consistency: the gravitational potential is generated by the mass distribution of all particles, and particles orbit within that potential. In equilibrium, such systems, described by a phase-space Distribution Function (DF) often dependent on energy (`ε`) and angular momentum (`ℓ`), are generally stable. NSphere provides a tool to efficiently explore how these systems evolve when perturbed or subjected to new physical processes (e.g., dark matter interactions, central black hole growth, external tidal forces) where analytical solutions are intractable.
+
+NSphere also includes self-interacting dark matter physics and anisotropic velocity distributions. Self-interactions are implemented via Monte Carlo scattering with configurable cross-sections, enabling simulation of core formation and gravothermal collapse. Anisotropic velocity distributions can be configured using constant-β models (where β controls the preference for radial versus tangential orbits) or Osipkov-Merritt models (where anisotropy increases with radius). These capabilities enable systematic exploration of how self-interactions and velocity anisotropy affect halo evolution, with simulations demonstrating that gravothermal collapse times can vary by more than a factor of two depending on the initial orbital structure.
 
 <table style="width:100%; border-collapse:collapse;">
   <tr>
@@ -117,9 +160,11 @@ NSphere simulates the evolution of spherical self-gravitating systems, primarily
 
 This approach significantly reduces computational cost compared to traditional `𝑁²` 𝑁-body methods and mitigates issues like two-body relaxation effects, making it suitable for high-precision studies of spherical systems on standard hardware.
 
-*(For more technical details, see the full [Online Documentation](https://nsphere-sidm.github.io/NSphere-SIDM/))*
+**Self Interactions:** NSphere augments the gravitational evolution with self-interactions via direct Monte Carlo of particle scatterings. At each time step, particles within local phase-space neighborhoods scatter stochastically based on their relative velocities and a user-specified cross-section (σ/m). Pairs scatter in their center-of-mass frame with momentum conserved and randomized directions. The implementation supports parallel execution allowing efficient simulation of SIDM physics including core formation and gravothermal collapse, as detailed in Kamionkowski, Sigurdson & Slone (2025), [arXiv:2506.04334](https://arxiv.org/abs/2506.04334).
 
-**Self Interactions:** NSphere-SIDM augments the gravitational evolution with self-interactions via direct Monte Carlo of particle scatterings. At each time step, particles within local phase-space neighborhoods scatter stochastically based on their relative velocities and a user-specified cross-section (σ/m). Pairs scatter in their center-of-mass frame with momentum conserved and randomized directions. The implementation supports parallel execution allowing efficient simulation of SIDM physics including core formation and gravothermal collapse, as detailed in Kamionkowski, Sigurdson & Slone (2025), [arXiv:2506.04334](https://arxiv.org/abs/2506.04334).
+**Anisotropy Models:** NSphere supports anisotropic velocity distributions with constant-β or Osipkov-Merritt radially-varying β(r) = r²/(r² + r_a²) models, where β controls orbital preference (β<0 tangential, β=0 isotropic, β>0 radial). Hernquist constant-β distributions are computed analytically using hypergeometric functions with special-case formulas for β=±0.5; other velocity distributions are computed numerically. Osipkov-Merritt models employ the augmented density method where ρ_Q(r) = ρ(r)(1+r²/r_a²) is inverted to obtain f(Q) where Q = ℰ - L²/(2r_a²), pseudo-velocities are sampled using rejection sampling, and coordinate transformations map pseudo-velocities to physical velocity components. The implementation automatically detects negative distribution function values, corrects one-off numerical artifacts, and prominently warns the user when there are unphysical negative regions. For further details on anisotropic implementations, see Kamionkowski & Sigurdson (2025), [arXiv:2510.23705](https://arxiv.org/abs/2510.23705).
+
+*(For more technical details, see the full [Online Documentation](https://nsphere-sidm.github.io/NSphere-SIDM/))*
 
 ## Core Components & Usage
 
@@ -288,11 +333,13 @@ deactivate
 
 ## Examples
 
-Two Jupyter Notebook examples demonstrate how to load and visualize simulation output:
+Three Jupyter Notebook examples demonstrate how to load and visualize simulation output:
 
 *   **[Example 1](https://nsphere-sidm.github.io/NSphere-SIDM/examples/notebooks/nsphere_notebook_example1.html): `examples/nsphere_notebook_example1.ipynb`**: Shows how to create phase-space and density profile animations from the `.dat` files generated by `./nsphere`. This provides a starting point for custom analysis and visualization using Python and demonstrates how to read NSphere binary data formats. See the notebook itself for prerequisites and usage instructions.
 
-*   **[Example 2](https://nsphere-sidm.github.io/NSphere-SIDM/examples/notebooks/nsphere_notebook_example2.html): `examples/nsphere_notebook_example2.ipynb`**: Advanced SIDM analysis notebook that reproduces the figures from the [SIDM paper](https://arxiv.org/abs/2506.04334). This notebook demonstrates phase-space evolution animations with power-law color scaling, core region analysis focusing on gravitational collapse (12.4-16.4 Gyr), density profile evolution showing core formation, particle count and velocity dispersion tracking in inner regions, and plot generation.
+*   **[Example 2](https://nsphere-sidm.github.io/NSphere-SIDM/examples/notebooks/nsphere_notebook_example2.html): `examples/nsphere_notebook_example2.ipynb`**: SIDM analysis notebook that reproduces the figures from the [SIDM paper](https://arxiv.org/abs/2506.04334). This notebook demonstrates phase-space evolution animations with power-law color scaling, core region analysis focusing on gravitational collapse (12.4-16.4 Gyr), density profile evolution showing core formation, particle count and velocity dispersion tracking in inner regions, and plot generation.
+
+*   **[Example 3](https://nsphere-sidm.github.io/NSphere-SIDM/examples/notebooks/nsphere_notebook_example3.html): `examples/nsphere_notebook_example3.ipynb`**: Anisotropic SIDM halo analysis that reproduces all 7 figures from the [velocity-anisotropy paper](https://arxiv.org/abs/2510.23705). Demonstrates phase-space density comparison for constant-β models (β = -1/2, 0, 1/2), evolution analysis including particle count, velocity dispersion, and β(r) tracking for 5 anisotropy values, Osipkov-Merritt analysis with 11 configurations showing non-monotonic collapse behavior, theoretical velocity dispersion profiles for both constant-β and OM models, and PDF generation control via boolean flags for publication-ready output.
 
 You can explore these notebooks using Jupyter Lab or Jupyter Notebook after activating the Python environment (`source ./activate_nsphere` from the project root), navigating to the `examples/` directory, and launching `jupyter notebook` or `jupyter lab`.
 
@@ -317,8 +364,13 @@ For Methods, Science, and Algorithms please cite:
 
 *   Kamionkowski, M., Sigurdson, K., & Slone, O. (2025).
     "Numerical evolution of self-gravitating halos of self-interacting dark matter.",
-    arXiv preprint arXiv:2506.04334 [astro-ph.GA]. \
+    arXiv preprint arXiv:2506.04334 [astro-ph.CO]. \
     [https://arxiv.org/abs/2506.04334](https://arxiv.org/abs/2506.04334)
+
+*   Kamionkowski, M. & Sigurdson, K. (2025).
+    "Gravothermal collapse of self-interacting dark-matter halos with anisotropic velocity distributions.",
+    arXiv preprint arXiv:2510.23705 [astro-ph.CO]. \
+    [https://arxiv.org/abs/2510.23705](https://arxiv.org/abs/2510.23705)
 
 *BibTeX for Papers:*
 ````bibtex
@@ -343,21 +395,32 @@ For Methods, Science, and Algorithms please cite:
   primaryClass = {astro-ph.CO},
   url          = {https://arxiv.org/abs/2506.04334}
 }
+
+@article{KamionkowskiSigurdson2025b,
+  author       = {Kamionkowski, Marc and Sigurdson, Kris},
+  title        = {Gravothermal collapse of self-interacting dark-matter halos with anisotropic velocity distributions},
+  journal      = {arXiv e-prints},
+  year         = {2025},
+  eprint       = {2510.23705},
+  archivePrefix= {arXiv},
+  primaryClass = {astro-ph.CO},
+  url          = {https://arxiv.org/abs/2510.23705}
+}
 ````
 
 ---
 If you wish to reference a specific software version please cite:
 
-**Software Citation (v0.1.6):**
+**Software Citation (v0.1.7):**
 
-*   Sigurdson, K., & Kamionkowski, M. (2025). *NSphere-SIDM: Spherical N-body Simulation Code for Self-Interacting Dark Matter* (Version 0.1.6) [Software]. GitHub. https://github.com/NSphere-SIDM/NSphere-SIDM
+*   Sigurdson, K., & Kamionkowski, M. (2025). *NSphere-SIDM: Spherical N-body Simulation Code for Self-Interacting Dark Matter* (Version 0.1.7) [Software]. GitHub. https://github.com/NSphere-SIDM/NSphere-SIDM
 
 *BibTeX for Software:*
 ````bibtex
 @software{SigurdsonKamionkowski2025NSphereSIDM,
   author       = {Sigurdson, Kris and Kamionkowski, Marc},
   title        = {{NSphere-SIDM: Spherical N-body Simulation Code for Self-Interacting Dark Matter}},
-  version      = {0.1.6},
+  version      = {0.1.7},
   year         = {2025},
   publisher    = {GitHub},
   url          = {https://github.com/NSphere-SIDM/NSphere-SIDM}
